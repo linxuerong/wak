@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wak.mapper.WakWithdrawlogMapper">
+    
+    <resultMap type="WakWithdrawlog" id="WakWithdrawlogResult">
+        <result property="id"    column="id"    />
+        <result property="address"    column="address"    />
+        <result property="usdt"    column="usdt"    />
+        <result property="status"    column="status"    />
+        <result property="usertype"    column="usertype"    />
+        <result property="agentid"    column="agentid"    />
+        <result property="createtime"    column="createtime"    />
+        <result property="updatetime"    column="updatetime"    />
+        <result property="remark"    column="remark"    />
+        <result property="uid"    column="uid"    />
+        <result property="nickname"    column="nickname"    />
+    </resultMap>
+
+    <sql id="selectWakWithdrawlogVo">
+        select id, address, usdt, status, usertype, agentid, createtime, updatetime, remark, uid, nickname from wak_withdrawlog
+    </sql>
+
+    <select id="selectWakWithdrawlogList" parameterType="WakWithdrawlog" resultMap="WakWithdrawlogResult">
+        <include refid="selectWakWithdrawlogVo"/>
+        <where>  
+            <if test="address != null  and address != ''"> and address like concat('%', #{address}, '%')</if>
+            <if test="usdt != null "> and usdt = #{usdt}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="usertype != null "> and usertype = #{usertype}</if>
+            <if test="agentid != null "> and agentid = #{agentid}</if>
+            <if test="params.beginCreatetime != null and params.beginCreatetime != '' and params.endCreatetime != null and params.endCreatetime != ''"> and createtime between #{params.beginCreatetime} and #{params.endCreatetime}</if>
+            <if test="params.beginUpdatetime != null and params.beginUpdatetime != '' and params.endUpdatetime != null and params.endUpdatetime != ''"> and updatetime between #{params.beginUpdatetime} and #{params.endUpdatetime}</if>
+            <if test="uid != null "> and uid = #{uid}</if>
+            <if test="nickname != null  and nickname != ''"> and nickname like concat('%', #{nickname}, '%')</if>
+        </where>
+        ORDER BY id DESC
+    </select>
+    
+    <select id="selectWakWithdrawlogById" parameterType="Long" resultMap="WakWithdrawlogResult">
+        <include refid="selectWakWithdrawlogVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertWakWithdrawlog" parameterType="WakWithdrawlog" useGeneratedKeys="true" keyProperty="id">
+        insert into wak_withdrawlog
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="address != null">address,</if>
+            <if test="usdt != null">usdt,</if>
+            <if test="status != null">status,</if>
+            <if test="usertype != null">usertype,</if>
+            <if test="agentid != null">agentid,</if>
+            <if test="createtime != null">createtime,</if>
+            <if test="updatetime != null">updatetime,</if>
+            <if test="remark != null">remark,</if>
+            <if test="uid != null">uid,</if>
+            <if test="nickname != null">nickname,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="address != null">#{address},</if>
+            <if test="usdt != null">#{usdt},</if>
+            <if test="status != null">#{status},</if>
+            <if test="usertype != null">#{usertype},</if>
+            <if test="agentid != null">#{agentid},</if>
+            <if test="createtime != null">#{createtime},</if>
+            <if test="updatetime != null">#{updatetime},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="uid != null">#{uid},</if>
+            <if test="nickname != null">#{nickname},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWakWithdrawlog" parameterType="WakWithdrawlog">
+        update wak_withdrawlog
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="address != null">address = #{address},</if>
+            <if test="usdt != null">usdt = #{usdt},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="usertype != null">usertype = #{usertype},</if>
+            <if test="agentid != null">agentid = #{agentid},</if>
+            <if test="createtime != null">createtime = #{createtime},</if>
+            <if test="updatetime != null">updatetime = #{updatetime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="uid != null">uid = #{uid},</if>
+            <if test="nickname != null">nickname = #{nickname},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWakWithdrawlogById" parameterType="Long">
+        delete from wak_withdrawlog where id = #{id}
+    </delete>
+
+    <delete id="deleteWakWithdrawlogByIds" parameterType="String">
+        delete from wak_withdrawlog where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

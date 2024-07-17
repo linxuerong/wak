@@ -1,8 +1,12 @@
 package com.ruoyi.common.utils.ip;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import javax.servlet.http.HttpServletRequest;
+
 import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.common.utils.StringUtils;
 
@@ -379,4 +383,28 @@ public class IpUtils
         }
         return false;
     }
+
+    public static String getIpArea(String ip) throws IOException {
+        return "";
+    }
+
+    public static void main(String[] args) throws IOException {
+//        QQWry qqwry = new QQWry(); // load qqwry.dat from classpath
+
+        QQWry qqwry = new QQWry(Paths.get("ruoyi-common/src/resources/qqwry.dat")); // load qqwry.dat from java.nio.file.Path
+
+//        byte[] data = Files.readAllBytes(Paths.get("path/to/qqwry.dat"));
+//        QQWry qqwry = new QQWry(data); // create QQWry with provided data
+
+        String dbVer = qqwry.getDatabaseVersion();
+        System.out.printf("qqwry.dat version=%s", dbVer);
+// qqwry.dat version=2020.9.10
+
+        String myIP = "172.70.85.6";
+        IPZone ipzone = qqwry.findIP(myIP);
+        System.out.printf("%s, %s", ipzone.getMainInfo(), ipzone.getSubInfo());
+// IANA, 保留地址用于本地回送
+    }
+
+
 }

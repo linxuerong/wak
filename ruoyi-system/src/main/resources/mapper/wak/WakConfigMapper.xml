@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wak.mapper.WakConfigMapper">
+    
+    <resultMap type="WakConfig" id="WakConfigResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="group"    column="group"    />
+        <result property="title"    column="title"    />
+        <result property="tip"    column="tip"    />
+        <result property="type"    column="type"    />
+        <result property="visible"    column="visible"    />
+        <result property="value"    column="value"    />
+        <result property="content"    column="content"    />
+        <result property="rule"    column="rule"    />
+        <result property="extend"    column="extend"    />
+        <result property="setting"    column="setting"    />
+    </resultMap>
+
+    <sql id="selectWakConfigVo">
+        select id, `name`, `group`, title, tip, `type`, visible, `value`, content, rule, extend, setting from wak_config
+    </sql>
+
+    <select id="selectWakConfigList" parameterType="WakConfig" resultMap="WakConfigResult">
+        <include refid="selectWakConfigVo"/>
+        <where>  
+            <if test="name != null  and name != ''"> and `name` like concat('%', #{name}, '%')</if>
+            <if test="group != null  and group != ''"> and `group` = #{group}</if>
+            <if test="title != null  and title != ''"> and title = #{title}</if>
+            <if test="tip != null  and tip != ''"> and tip = #{tip}</if>
+            <if test="type != null  and type != ''"> and `type` = #{type}</if>
+            <if test="visible != null  and visible != ''"> and visible = #{visible}</if>
+            <if test="value != null  and value != ''"> and `value` = #{value}</if>
+            <if test="content != null  and content != ''"> and content = #{content}</if>
+            <if test="rule != null  and rule != ''"> and rule = #{rule}</if>
+            <if test="extend != null  and extend != ''"> and extend = #{extend}</if>
+            <if test="setting != null  and setting != ''"> and setting = #{setting}</if>
+        </where>
+    </select>
+    
+    <select id="selectWakConfigById" parameterType="Integer" resultMap="WakConfigResult">
+        <include refid="selectWakConfigVo"/>
+        where id = #{id}
+    </select>
+    <select id="selectWakConfigByName" resultMap="WakConfigResult">
+        <include refid="selectWakConfigVo"/>
+        where `name` = #{name}
+    </select>
+
+    <insert id="insertWakConfig" parameterType="WakConfig" useGeneratedKeys="true" keyProperty="id">
+        insert into wak_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null">`name`,</if>
+            <if test="group != null">`group`,</if>
+            <if test="title != null">title,</if>
+            <if test="tip != null">tip,</if>
+            <if test="type != null">`type`,</if>
+            <if test="visible != null">visible,</if>
+            <if test="value != null">`value`,</if>
+            <if test="content != null">content,</if>
+            <if test="rule != null">rule,</if>
+            <if test="extend != null">extend,</if>
+            <if test="setting != null">setting,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null">#{name},</if>
+            <if test="group != null">#{group},</if>
+            <if test="title != null">#{title},</if>
+            <if test="tip != null">#{tip},</if>
+            <if test="type != null">#{type},</if>
+            <if test="visible != null">#{visible},</if>
+            <if test="value != null">#{value},</if>
+            <if test="content != null">#{content},</if>
+            <if test="rule != null">#{rule},</if>
+            <if test="extend != null">#{extend},</if>
+            <if test="setting != null">#{setting},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWakConfig" parameterType="WakConfig">
+        update wak_config
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null">`name` = #{name},</if>
+            <if test="group != null">`group` = #{group},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="tip != null">tip = #{tip},</if>
+            <if test="type != null">`type` = #{type},</if>
+            <if test="visible != null">visible = #{visible},</if>
+            <if test="value != null">`value` = #{value},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="rule != null">rule = #{rule},</if>
+            <if test="extend != null">extend = #{extend},</if>
+            <if test="setting != null">setting = #{setting},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWakConfigById" parameterType="Integer">
+        delete from wak_config where id = #{id}
+    </delete>
+
+    <delete id="deleteWakConfigByIds" parameterType="String">
+        delete from wak_config where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

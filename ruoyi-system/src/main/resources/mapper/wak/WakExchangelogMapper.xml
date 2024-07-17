@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wak.mapper.WakExchangelogMapper">
+    
+    <resultMap type="WakExchangelog" id="WakExchangelogResult">
+        <result property="id"    column="id"    />
+        <result property="address"    column="address"    />
+        <result property="ethNum"    column="eth_num"    />
+        <result property="ethPrice"    column="eth_price"    />
+        <result property="usdtNum"    column="usdt_num"    />
+        <result property="createtime"    column="createtime"    />
+        <result property="uid"    column="uid"    />
+        <result property="ethBeforeBalance"    column="eth_before_balance"    />
+        <result property="ethLastBalance"    column="eth_last_balance"    />
+        <result property="usdtBeforeBalance"    column="usdt_before_balance"    />
+        <result property="usdtLastBalance"    column="usdt_last_balance"    />
+    </resultMap>
+
+    <sql id="selectWakExchangelogVo">
+        select id, address, eth_num, eth_price, usdt_num, createtime, uid, eth_before_balance, eth_last_balance, usdt_before_balance, usdt_last_balance from wak_exchangelog
+    </sql>
+
+    <select id="selectWakExchangelogList" parameterType="WakExchangelog" resultMap="WakExchangelogResult">
+        <include refid="selectWakExchangelogVo"/>
+        <where>  
+            <if test="address != null  and address != ''"> and address like concat('%', #{address}, '%')</if>
+            <if test="ethNum != null "> and eth_num = #{ethNum}</if>
+            <if test="ethPrice != null "> and eth_price = #{ethPrice}</if>
+            <if test="usdtNum != null "> and usdt_num = #{usdtNum}</if>
+            <if test="params.beginCreatetime != null and params.beginCreatetime != '' and params.endCreatetime != null and params.endCreatetime != ''"> and createtime between #{params.beginCreatetime} and #{params.endCreatetime}</if>
+            <if test="uid != null "> and uid = #{uid}</if>
+        </where>
+        ORDER BY id DESC
+    </select>
+    
+    <select id="selectWakExchangelogById" parameterType="Long" resultMap="WakExchangelogResult">
+        <include refid="selectWakExchangelogVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertWakExchangelog" parameterType="WakExchangelog" useGeneratedKeys="true" keyProperty="id">
+        insert into wak_exchangelog
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="address != null">address,</if>
+            <if test="ethNum != null">eth_num,</if>
+            <if test="ethPrice != null">eth_price,</if>
+            <if test="usdtNum != null">usdt_num,</if>
+            <if test="createtime != null">createtime,</if>
+            <if test="uid != null">uid,</if>
+            <if test="ethBeforeBalance != null">eth_before_balance,</if>
+            <if test="ethLastBalance != null">eth_last_balance,</if>
+            <if test="usdtBeforeBalance != null">usdt_before_balance,</if>
+            <if test="usdtLastBalance != null">usdt_last_balance,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="address != null">#{address},</if>
+            <if test="ethNum != null">#{ethNum},</if>
+            <if test="ethPrice != null">#{ethPrice},</if>
+            <if test="usdtNum != null">#{usdtNum},</if>
+            <if test="createtime != null">#{createtime},</if>
+            <if test="uid != null">#{uid},</if>
+            <if test="ethBeforeBalance != null">#{ethBeforeBalance},</if>
+            <if test="ethLastBalance != null">#{ethLastBalance},</if>
+            <if test="usdtBeforeBalance != null">#{usdtBeforeBalance},</if>
+            <if test="usdtLastBalance != null">#{usdtLastBalance},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWakExchangelog" parameterType="WakExchangelog">
+        update wak_exchangelog
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="address != null">address = #{address},</if>
+            <if test="ethNum != null">eth_num = #{ethNum},</if>
+            <if test="ethPrice != null">eth_price = #{ethPrice},</if>
+            <if test="usdtNum != null">usdt_num = #{usdtNum},</if>
+            <if test="createtime != null">createtime = #{createtime},</if>
+            <if test="uid != null">uid = #{uid},</if>
+            <if test="ethBeforeBalance != null">eth_before_balance = #{ethBeforeBalance},</if>
+            <if test="ethLastBalance != null">eth_last_balance = #{ethLastBalance},</if>
+            <if test="usdtBeforeBalance != null">usdt_before_balance = #{usdtBeforeBalance},</if>
+            <if test="usdtLastBalance != null">usdt_last_balance = #{usdtLastBalance},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWakExchangelogById" parameterType="Long">
+        delete from wak_exchangelog where id = #{id}
+    </delete>
+
+    <delete id="deleteWakExchangelogByIds" parameterType="String">
+        delete from wak_exchangelog where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

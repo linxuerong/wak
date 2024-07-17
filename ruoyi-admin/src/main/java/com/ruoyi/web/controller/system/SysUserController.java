@@ -3,7 +3,13 @@ package com.ruoyi.web.controller.system;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.common.core.domain.model.LoginUser;
+import com.ruoyi.common.utils.GoogleAuthenticator;
+import com.ruoyi.system.domain.SysAuthenticator;
+import com.ruoyi.system.service.*;
 import org.apache.commons.lang3.ArrayUtils;
+import org.iherus.codegen.qrcode.SimpleQrcodeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -27,10 +33,6 @@ import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
-import com.ruoyi.system.service.ISysDeptService;
-import com.ruoyi.system.service.ISysPostService;
-import com.ruoyi.system.service.ISysRoleService;
-import com.ruoyi.system.service.ISysUserService;
 
 /**
  * 用户信息
@@ -52,6 +54,9 @@ public class SysUserController extends BaseController
 
     @Autowired
     private ISysPostService postService;
+
+    @Autowired
+    private ISysAuthenticatorService sysAuthenticatorService;
 
     /**
      * 获取用户列表
@@ -248,4 +253,20 @@ public class SysUserController extends BaseController
     {
         return success(deptService.selectDeptTreeList(dept));
     }
+
+
+    @GetMapping("/getQrcode")
+    public void getQrcode(HttpServletResponse response) throws Exception {
+        LoginUser loginUser = getLoginUser();
+        SysAuthenticator sysAuthenticator = sysAuthenticatorService.selectSysAuthenticatorByUserId(loginUser.getUserId());
+        if (sysAuthenticator.getIsShow()!=0){
+            return;
+        }
+        String secretKey = sysAuthenticator.getGoogleKey();
+        // 生成二维码内容
+        String qrCodeText = GoogleAuthenticator.getQrCodeText(secretKey, loginUser.getUsername(), "");
+        // 生成二维码输出
+        new SimpleQrcodeGenerator().generate(qrCodeText).toStream(response.getOutputStream());
+    }
+
 }

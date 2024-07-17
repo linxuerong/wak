@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wak.mapper.WakRateMapper">
+    
+    <resultMap type="WakRate" id="WakRateResult">
+        <result property="id"    column="id"    />
+        <result property="usdt"    column="usdt"    />
+        <result property="rate"    column="rate"    />
+    </resultMap>
+
+    <sql id="selectWakRateVo">
+        select id, usdt, rate from wak_rate
+    </sql>
+
+    <select id="selectWakRateList" parameterType="WakRate" resultMap="WakRateResult">
+        <include refid="selectWakRateVo"/>
+        <where>  
+            <if test="usdt != null "> and usdt = #{usdt}</if>
+            <if test="rate != null "> and rate = #{rate}</if>
+        </where>
+        ORDER BY usdt DESC
+    </select>
+    
+    <select id="selectWakRateById" parameterType="Long" resultMap="WakRateResult">
+        <include refid="selectWakRateVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertWakRate" parameterType="WakRate" useGeneratedKeys="true" keyProperty="id">
+        insert into wak_rate
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="usdt != null">usdt,</if>
+            <if test="rate != null">rate,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="usdt != null">#{usdt},</if>
+            <if test="rate != null">#{rate},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWakRate" parameterType="WakRate">
+        update wak_rate
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="usdt != null">usdt = #{usdt},</if>
+            <if test="rate != null">rate = #{rate},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWakRateById" parameterType="Long">
+        delete from wak_rate where id = #{id}
+    </delete>
+
+    <delete id="deleteWakRateByIds" parameterType="String">
+        delete from wak_rate where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

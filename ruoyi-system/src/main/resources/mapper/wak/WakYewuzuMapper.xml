@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wak.mapper.WakYewuzuMapper">
+    
+    <resultMap type="WakYewuzu" id="WakYewuzuResult">
+        <result property="id"    column="id"    />
+        <result property="yewuzu"    column="yewuzu"    />
+    </resultMap>
+
+    <sql id="selectWakYewuzuVo">
+        select id, yewuzu from wak_yewuzu
+    </sql>
+
+    <select id="selectWakYewuzuList" parameterType="WakYewuzu" resultMap="WakYewuzuResult">
+        <include refid="selectWakYewuzuVo"/>
+        <where>  
+            <if test="yewuzu != null  and yewuzu != ''"> and yewuzu = #{yewuzu}</if>
+        </where>
+    </select>
+    
+    <select id="selectWakYewuzuById" parameterType="Long" resultMap="WakYewuzuResult">
+        <include refid="selectWakYewuzuVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertWakYewuzu" parameterType="WakYewuzu" useGeneratedKeys="true" keyProperty="id">
+        insert into wak_yewuzu
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="yewuzu != null">yewuzu,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="yewuzu != null">#{yewuzu},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWakYewuzu" parameterType="WakYewuzu">
+        update wak_yewuzu
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="yewuzu != null">yewuzu = #{yewuzu},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWakYewuzuById" parameterType="Long">
+        delete from wak_yewuzu where id = #{id}
+    </delete>
+
+    <delete id="deleteWakYewuzuByIds" parameterType="String">
+        delete from wak_yewuzu where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

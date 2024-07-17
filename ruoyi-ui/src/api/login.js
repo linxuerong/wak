@@ -58,3 +58,4 @@ export function getCodeImg() {
     timeout: 20000
   })
 }
+

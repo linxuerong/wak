@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wak.mapper.WakTongjiMapper">
+    
+    <resultMap type="WakTongji" id="WakTongjiResult">
+        <result property="id"    column="id"    />
+        <result property="yewuzu"    column="yewuzu"    />
+        <result property="yewuyuan"    column="yewuyuan"    />
+        <result property="recharge"    column="recharge"    />
+        <result property="withdraw"    column="withdraw"    />
+        <result property="createtime"    column="createtime"    />
+    </resultMap>
+
+    <sql id="selectWakTongjiVo">
+        select id, yewuzu, yewuyuan, recharge, withdraw, createtime from wak_tongji
+    </sql>
+
+    <select id="selectWakTongjiList" parameterType="WakTongji" resultMap="WakTongjiResult">
+        <include refid="selectWakTongjiVo"/>
+        <where>  
+            <if test="yewuzu != null  and yewuzu != ''"> and yewuzu = #{yewuzu}</if>
+            <if test="yewuyuan != null  and yewuyuan != ''"> and yewuyuan = #{yewuyuan}</if>
+            <if test="recharge != null  and recharge != ''"> and recharge = #{recharge}</if>
+            <if test="withdraw != null  and withdraw != ''"> and withdraw = #{withdraw}</if>
+            <if test="params.beginCreatetime != null and params.beginCreatetime != '' and params.endCreatetime != null and params.endCreatetime != ''"> and createtime between #{params.beginCreatetime} and #{params.endCreatetime}</if>
+        </where>
+    </select>
+    
+    <select id="selectWakTongjiById" parameterType="Long" resultMap="WakTongjiResult">
+        <include refid="selectWakTongjiVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertWakTongji" parameterType="WakTongji">
+        insert into wak_tongji
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="yewuzu != null">yewuzu,</if>
+            <if test="yewuyuan != null">yewuyuan,</if>
+            <if test="recharge != null">recharge,</if>
+            <if test="withdraw != null">withdraw,</if>
+            <if test="createtime != null">createtime,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="yewuzu != null">#{yewuzu},</if>
+            <if test="yewuyuan != null">#{yewuyuan},</if>
+            <if test="recharge != null">#{recharge},</if>
+            <if test="withdraw != null">#{withdraw},</if>
+            <if test="createtime != null">#{createtime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWakTongji" parameterType="WakTongji">
+        update wak_tongji
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="yewuzu != null">yewuzu = #{yewuzu},</if>
+            <if test="yewuyuan != null">yewuyuan = #{yewuyuan},</if>
+            <if test="recharge != null">recharge = #{recharge},</if>
+            <if test="withdraw != null">withdraw = #{withdraw},</if>
+            <if test="createtime != null">createtime = #{createtime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWakTongjiById" parameterType="Long">
+        delete from wak_tongji where id = #{id}
+    </delete>
+
+    <delete id="deleteWakTongjiByIds" parameterType="String">
+        delete from wak_tongji where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

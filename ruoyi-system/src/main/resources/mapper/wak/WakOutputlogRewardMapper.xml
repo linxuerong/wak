@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wak.mapper.WakOutputlogRewardMapper">
+    
+    <resultMap type="WakOutputlogReward" id="WakOutputlogRewardResult">
+        <result property="id"    column="id"    />
+        <result property="address"    column="address"    />
+        <result property="rewardAddress"    column="reward_address"    />
+        <result property="rewardEth"    column="reward_eth"    />
+        <result property="rewardUid"    column="reward_uid"    />
+        <result property="createtime"    column="createtime"    />
+        <result property="uid"    column="uid"    />
+        <result property="beUsdt"    column="be_usdt"    />
+    </resultMap>
+
+    <sql id="selectWakOutputlogRewardVo">
+        select id, address, reward_address, reward_eth, reward_uid, createtime, uid, be_usdt from wak_outputlog_reward
+    </sql>
+
+    <select id="selectWakOutputlogRewardList" parameterType="WakOutputlogReward" resultMap="WakOutputlogRewardResult">
+        <include refid="selectWakOutputlogRewardVo"/>
+        <where>  
+            <if test="address != null  and address != ''"> and address = #{address}</if>
+            <if test="rewardAddress != null  and rewardAddress != ''"> and reward_address = #{rewardAddress}</if>
+            <if test="rewardEth != null "> and reward_eth = #{rewardEth}</if>
+            <if test="rewardUid != null "> and reward_uid = #{rewardUid}</if>
+            <if test="params.beginCreatetime != null and params.beginCreatetime != '' and params.endCreatetime != null and params.endCreatetime != ''"> and createtime between #{params.beginCreatetime} and #{params.endCreatetime}</if>
+            <if test="uid != null "> and uid = #{uid}</if>
+            <if test="beUsdt != null "> and be_usdt = #{beUsdt}</if>
+        </where>
+    </select>
+    
+    <select id="selectWakOutputlogRewardById" parameterType="Long" resultMap="WakOutputlogRewardResult">
+        <include refid="selectWakOutputlogRewardVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertWakOutputlogReward" parameterType="WakOutputlogReward" useGeneratedKeys="true" keyProperty="id">
+        insert into wak_outputlog_reward
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="address != null">address,</if>
+            <if test="rewardAddress != null">reward_address,</if>
+            <if test="rewardEth != null">reward_eth,</if>
+            <if test="rewardUid != null">reward_uid,</if>
+            <if test="createtime != null">createtime,</if>
+            <if test="uid != null">uid,</if>
+            <if test="beUsdt != null">be_usdt,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="address != null">#{address},</if>
+            <if test="rewardAddress != null">#{rewardAddress},</if>
+            <if test="rewardEth != null">#{rewardEth},</if>
+            <if test="rewardUid != null">#{rewardUid},</if>
+            <if test="createtime != null">#{createtime},</if>
+            <if test="uid != null">#{uid},</if>
+            <if test="beUsdt != null">#{beUsdt},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWakOutputlogReward" parameterType="WakOutputlogReward">
+        update wak_outputlog_reward
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="address != null">address = #{address},</if>
+            <if test="rewardAddress != null">reward_address = #{rewardAddress},</if>
+            <if test="rewardEth != null">reward_eth = #{rewardEth},</if>
+            <if test="rewardUid != null">reward_uid = #{rewardUid},</if>
+            <if test="createtime != null">createtime = #{createtime},</if>
+            <if test="uid != null">uid = #{uid},</if>
+            <if test="beUsdt != null">be_usdt = #{beUsdt},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWakOutputlogRewardById" parameterType="Long">
+        delete from wak_outputlog_reward where id = #{id}
+    </delete>
+
+    <delete id="deleteWakOutputlogRewardByIds" parameterType="String">
+        delete from wak_outputlog_reward where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

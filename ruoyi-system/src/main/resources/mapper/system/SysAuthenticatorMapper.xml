@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysAuthenticatorMapper">
+    
+    <resultMap type="SysAuthenticator" id="SysAuthenticatorResult">
+        <result property="userId"    column="user_id"    />
+        <result property="googleKey"    column="google_key"    />
+        <result property="isShow"    column="is_show"    />
+    </resultMap>
+
+    <sql id="selectSysAuthenticatorVo">
+        select user_id, google_key, is_show from sys_authenticator
+    </sql>
+
+    <select id="selectSysAuthenticatorList" parameterType="SysAuthenticator" resultMap="SysAuthenticatorResult">
+        <include refid="selectSysAuthenticatorVo"/>
+        <where>  
+            <if test="googleKey != null  and googleKey != ''"> and google_key = #{googleKey}</if>
+            <if test="isShow != null "> and is_show = #{isShow}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysAuthenticatorByUserId" parameterType="Long" resultMap="SysAuthenticatorResult">
+        <include refid="selectSysAuthenticatorVo"/>
+        where user_id = #{userId}
+    </select>
+        
+    <insert id="insertSysAuthenticator" parameterType="SysAuthenticator">
+        insert into sys_authenticator
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="googleKey != null">google_key,</if>
+            <if test="isShow != null">is_show,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="googleKey != null">#{googleKey},</if>
+            <if test="isShow != null">#{isShow},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysAuthenticator" parameterType="SysAuthenticator">
+        update sys_authenticator
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="googleKey != null">google_key = #{googleKey},</if>
+            <if test="isShow != null">is_show = #{isShow},</if>
+        </trim>
+        where user_id = #{userId}
+    </update>
+
+    <delete id="deleteSysAuthenticatorByUserId" parameterType="Long">
+        delete from sys_authenticator where user_id = #{userId}
+    </delete>
+
+    <delete id="deleteSysAuthenticatorByUserIds" parameterType="String">
+        delete from sys_authenticator where user_id in 
+        <foreach item="userId" collection="array" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </delete>
+</mapper>

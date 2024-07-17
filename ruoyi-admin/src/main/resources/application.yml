@@ -16,7 +16,7 @@ ruoyi:
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
-  port: 8080
+  port: 9982
   servlet:
     # 应用的访问路径
     context-path: /
@@ -34,7 +34,7 @@ server:
 # 日志配置
 logging:
   level:
-    com.ruoyi: debug
+    com.ruoyi: info
     org.springframework: warn
 
 # 用户配置
@@ -68,13 +68,13 @@ spring:
   # redis 配置
   redis:
     # 地址
-    host: localhost
+    host: 127.0.0.1
     # 端口，默认为6379
     port: 6379
     # 数据库索引
     database: 0
     # 密码
-    password:
+    password: ijsudhfuw78374
     # 连接超时时间
     timeout: 10s
     lettuce:
@@ -95,7 +95,7 @@ token:
   # 令牌密钥
   secret: abcdefghijklmnopqrstuvwxyz
   # 令牌有效期（默认30分钟）
-  expireTime: 30
+  expireTime: 480
 
 # MyBatis配置
 mybatis:

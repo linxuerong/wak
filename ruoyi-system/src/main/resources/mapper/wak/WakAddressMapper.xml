@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wak.mapper.WakAddressMapper">
+    
+    <resultMap type="WakAddress" id="WakAddressResult">
+        <result property="id"    column="id"    />
+        <result property="type"    column="type"    />
+        <result property="address"    column="address"    />
+        <result property="key"    column="key"    />
+        <result property="status"    column="status"    />
+        <result property="balance"    column="balance"    />
+        <result property="balanceUsdt"    column="balance_usdt"    />
+    </resultMap>
+
+    <sql id="selectWakAddressVo">
+        select id, `type`, address, `key`, status, balance, balance_usdt from wak_address
+    </sql>
+
+    <select id="selectWakAddressList" parameterType="WakAddress" resultMap="WakAddressResult">
+        <include refid="selectWakAddressVo"/>
+        <where>  
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="address != null  and address != ''"> and address = #{address}</if>
+            <if test="status != null "> and status = #{status}</if>
+        </where>
+    </select>
+    
+    <select id="selectWakAddressById" parameterType="Long" resultMap="WakAddressResult">
+        <include refid="selectWakAddressVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertWakAddress" parameterType="WakAddress" useGeneratedKeys="true" keyProperty="id">
+        insert into wak_address
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="type != null">`type`,</if>
+            <if test="address != null">address,</if>
+            <if test="key != null">`key`,</if>
+            <if test="status != null">status,</if>
+            <if test="balance != null">balance,</if>
+            <if test="balanceUsdt != null">balance_usdt,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="type != null">#{type},</if>
+            <if test="address != null">#{address},</if>
+            <if test="key != null">#{key},</if>
+            <if test="status != null">#{status},</if>
+            <if test="balance != null">#{balance},</if>
+            <if test="balanceUsdt != null">#{balanceUsdt},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWakAddress" parameterType="WakAddress">
+        update wak_address
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="type != null">`type` = #{type},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="key != null">`key` = #{key},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="balance != null">balance = #{balance},</if>
+            <if test="balanceUsdt != null">balance_usdt = #{balanceUsdt},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWakAddressById" parameterType="Long">
+        delete from wak_address where id = #{id}
+    </delete>
+
+    <delete id="deleteWakAddressByIds" parameterType="String">
+        delete from wak_address where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

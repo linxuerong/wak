@@ -61,6 +61,7 @@ Vue.component('ImagePreview', ImagePreview)
 Vue.use(directive)
 Vue.use(plugins)
 Vue.use(VueMeta)
+Vue.use(Element);
 DictData.install()
 
 /**

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wak.mapper.WakYewuyuanMapper">
+    
+    <resultMap type="WakYewuyuan" id="WakYewuyuanResult">
+        <result property="id"    column="id"    />
+        <result property="yewuyuan"    column="yewuyuan"    />
+        <result property="yewuzuid"    column="yewuzuid"    />
+    </resultMap>
+
+    <resultMap type="com.ruoyi.wak.vo.WakYewuyuanVo" id="WakYewuyuanVoResult">
+        <result property="id"    column="id"    />
+        <result property="yewuyuan"    column="yewuyuan"    />
+        <result property="yewuzuid"    column="yewuzuid"    />
+        <result property="yewuzu"    column="yewuzu"    />
+    </resultMap>
+
+    <sql id="selectWakYewuyuanVo">
+        select id, yewuyuan, yewuzuid from wak_yewuyuan
+    </sql>
+
+    <select id="selectWakYewuyuanList" parameterType="WakYewuyuan" resultMap="WakYewuyuanVoResult">
+        SELECT * FROM (SELECT * from wak_yewuyuan
+        <where>
+            <if test="yewuyuan != null  and yewuyuan != ''"> and yewuyuan = #{yewuyuan}</if>
+            <if test="yewuzuid != null "> and yewuzuid = #{yewuzuid}</if>
+        </where>)a left join (SELECT * from wak_yewuzu)b on a.yewuzuid= b.id
+    </select>
+    
+    <select id="selectWakYewuyuanById" parameterType="Long" resultMap="WakYewuyuanResult">
+        <include refid="selectWakYewuyuanVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertWakYewuyuan" parameterType="WakYewuyuan" useGeneratedKeys="true" keyProperty="id">
+        insert into wak_yewuyuan
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="yewuyuan != null">yewuyuan,</if>
+            <if test="yewuzuid != null">yewuzuid,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="yewuyuan != null">#{yewuyuan},</if>
+            <if test="yewuzuid != null">#{yewuzuid},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWakYewuyuan" parameterType="WakYewuyuan">
+        update wak_yewuyuan
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="yewuyuan != null">yewuyuan = #{yewuyuan},</if>
+            <if test="yewuzuid != null">yewuzuid = #{yewuzuid},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWakYewuyuanById" parameterType="Long">
+        delete from wak_yewuyuan where id = #{id}
+    </delete>
+
+    <delete id="deleteWakYewuyuanByIds" parameterType="String">
+        delete from wak_yewuyuan where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

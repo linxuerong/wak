@@ -83,4 +83,6 @@ public class SysLoginController
         List<SysMenu> menus = menuService.selectMenuTreeByUserId(userId);
         return AjaxResult.success(menuService.buildMenus(menus));
     }
+
+
 }

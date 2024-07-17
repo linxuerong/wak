@@ -133,3 +133,12 @@ export function deptTreeSelect() {
     method: 'get'
   })
 }
+
+
+export function getQrCode(){
+  return request({
+    url: '/system/user/getQrcode',
+    responseType:'blob',
+    method: 'get'
+  })
+}

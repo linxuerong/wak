@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wak.mapper.WakUserActivityRecordMapper">
+
+    <resultMap type="WakUserActivityRecord" id="WakUserActivityRecordResult">
+        <result property="id"    column="id"    />
+        <result property="activityId"    column="activity_id"    />
+        <result property="activityName"    column="activity_name"    />
+        <result property="userId"    column="user_id"    />
+        <result property="userAddress"    column="user_address"    />
+        <result property="rewardAmount"    column="reward_amount"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="activyType"    column="activy_type"    />
+    </resultMap>
+
+    <sql id="selectWakUserActivityRecordVo">
+        select id, activity_id, activity_name, user_id, user_address, reward_amount, create_time, activy_type from wak_user_activity_record
+    </sql>
+
+    <select id="selectWakUserActivityRecordList" parameterType="WakUserActivityRecord" resultMap="WakUserActivityRecordResult">
+        <include refid="selectWakUserActivityRecordVo"/>
+        <where>
+            <if test="activityId != null "> and activity_id = #{activityId}</if>
+            <if test="activityName != null  and activityName != ''"> and activity_name like concat('%', #{activityName}, '%')</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="userAddress != null  and userAddress != ''"> and user_address = #{userAddress}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="activyType != null "> and activy_type = #{activyType}</if>
+        </where>
+        ORDER BY id DESC
+    </select>
+
+    <select id="selectWakUserActivityRecordById" parameterType="Long" resultMap="WakUserActivityRecordResult">
+        <include refid="selectWakUserActivityRecordVo"/>
+        where id = #{id}
+    </select>
+    <select id="sumAmountByUserIdAndActivityType" resultType="java.math.BigDecimal">
+        SELECT IFNULL(SUM(reward_amount),0) FROM wak_user_activity_record WHERE user_id = #{userId} AND activy_type = #{activityType}
+    </select>
+
+    <insert id="insertWakUserActivityRecord" parameterType="WakUserActivityRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into wak_user_activity_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="activityId != null">activity_id,</if>
+            <if test="activityName != null">activity_name,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="userAddress != null">user_address,</if>
+            <if test="rewardAmount != null">reward_amount,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="activyType != null">activy_type,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="activityId != null">#{activityId},</if>
+            <if test="activityName != null">#{activityName},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="userAddress != null">#{userAddress},</if>
+            <if test="rewardAmount != null">#{rewardAmount},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="activyType != null">#{activyType},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWakUserActivityRecord" parameterType="WakUserActivityRecord">
+        update wak_user_activity_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="activityId != null">activity_id = #{activityId},</if>
+            <if test="activityName != null">activity_name = #{activityName},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="userAddress != null">user_address = #{userAddress},</if>
+            <if test="rewardAmount != null">reward_amount = #{rewardAmount},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="activyType != null">activy_type = #{activyType},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWakUserActivityRecordById" parameterType="Long">
+        delete from wak_user_activity_record where id = #{id}
+    </delete>
+
+    <delete id="deleteWakUserActivityRecordByIds" parameterType="String">
+        delete from wak_user_activity_record where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

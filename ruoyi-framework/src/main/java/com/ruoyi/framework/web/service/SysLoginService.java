@@ -1,6 +1,11 @@
 package com.ruoyi.framework.web.service;
 
 import javax.annotation.Resource;
+
+import com.ruoyi.common.utils.GoogleAuthenticator;
+import com.ruoyi.system.domain.SysAuthenticator;
+import com.ruoyi.system.domain.SysConfig;
+import com.ruoyi.system.service.ISysAuthenticatorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -52,6 +57,12 @@ public class SysLoginService
     @Autowired
     private ISysConfigService configService;
 
+    @Autowired
+    private ISysAuthenticatorService sysAuthenticatorService;
+
+    @Autowired
+    private ISysConfigService sysConfigService;
+
     /**
      * 登录验证
      * 
@@ -63,8 +74,35 @@ public class SysLoginService
      */
     public String login(String username, String password, String code, String uuid)
     {
+        SysUser sysUser = userService.selectUserByUserName(username);
+        if (sysUser==null){
+            throw new ServiceException("用户名不存在");
+        }
+        SysAuthenticator sysAuthenticator = sysAuthenticatorService.selectSysAuthenticatorByUserId(sysUser.getUserId());
+        String sysConfig = sysConfigService.selectConfigByKey("isAuth");
+        if (sysConfig!=null && sysConfig.equals("0")) {
+            if (sysAuthenticator != null) {
+                if (StringUtils.isBlank(code)) {
+                    throw new ServiceException("请输入谷歌验证码");
+                }
+                //校验谷歌验证码
+                if (!GoogleAuthenticator.authcode(code, sysAuthenticator.getGoogleKey())) {
+                    throw new ServiceException("谷歌验证码错误");
+                }
+                if (sysAuthenticator.getIsShow() == 0) {
+                    sysAuthenticator.setIsShow(1);
+                    sysAuthenticatorService.updateSysAuthenticator(sysAuthenticator);
+                }
+            } else {
+                sysAuthenticator = new SysAuthenticator();
+                sysAuthenticator.setUserId(sysUser.getUserId());
+                sysAuthenticator.setGoogleKey(GoogleAuthenticator.generateSecretKey());
+                sysAuthenticator.setIsShow(0);
+                sysAuthenticatorService.insertSysAuthenticator(sysAuthenticator);
+            }
+        }
         // 验证码校验
-        validateCaptcha(username, code, uuid);
+//        validateCaptcha(username, code, uuid);
         // 登录前置校验
         loginPreCheck(username, password);
         // 用户验证
@@ -177,5 +215,11 @@ public class SysLoginService
         sysUser.setLoginIp(IpUtils.getIpAddr());
         sysUser.setLoginDate(DateUtils.getNowDate());
         userService.updateUserProfile(sysUser);
+    }
+
+    public static void main(String[] args) {
+        if (!GoogleAuthenticator.authcode("412141", "YCC65U3TFXD6KCUH")){
+            System.out.println(111);
+        }
     }
 }

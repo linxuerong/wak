@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wak.mapper.WakOutputlogMapper">
+    
+    <resultMap type="WakOutputlog" id="WakOutputlogResult">
+        <result property="id"    column="id"    />
+        <result property="address"    column="address"    />
+        <result property="systemUsdt"    column="system_usdt"    />
+        <result property="outputEth"    column="output_eth"    />
+        <result property="rate"    column="rate"    />
+        <result property="createtime"    column="createtime"    />
+        <result property="uid"    column="uid"    />
+    </resultMap>
+
+    <sql id="selectWakOutputlogVo">
+        select id, address, system_usdt, output_eth, rate, createtime, uid from wak_outputlog
+    </sql>
+
+    <select id="selectWakOutputlogList" parameterType="WakOutputlog" resultMap="WakOutputlogResult">
+        <include refid="selectWakOutputlogVo"/>
+        <where>  
+            <if test="address != null  and address != ''"> and address like concat('%', #{address}, '%')</if>
+            <if test="systemUsdt != null "> and system_usdt = #{systemUsdt}</if>
+            <if test="outputEth != null "> and output_eth = #{outputEth}</if>
+            <if test="rate != null "> and rate = #{rate}</if>
+            <if test="params.beginCreatetime != null and params.beginCreatetime != '' and params.endCreatetime != null and params.endCreatetime != ''"> and createtime between #{params.beginCreatetime} and #{params.endCreatetime}</if>
+            <if test="uid != null "> and uid = #{uid}</if>
+        </where>
+        ORDER BY id DESC
+    </select>
+    
+    <select id="selectWakOutputlogById" parameterType="Long" resultMap="WakOutputlogResult">
+        <include refid="selectWakOutputlogVo"/>
+        where id = #{id}
+    </select>
+    <select id="selectWakOutputlogByUserIdAndTime" resultMap="WakOutputlogResult">
+        <include refid="selectWakOutputlogVo"/>
+        where uid = #{userId,jdbcType=BIGINT}
+        and createtime >= #{startTime,jdbcType=BIGINT}
+    </select>
+
+    <insert id="insertWakOutputlog" parameterType="WakOutputlog" useGeneratedKeys="true" keyProperty="id">
+        insert into wak_outputlog
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="address != null">address,</if>
+            <if test="systemUsdt != null">system_usdt,</if>
+            <if test="outputEth != null">output_eth,</if>
+            <if test="rate != null">rate,</if>
+            <if test="createtime != null">createtime,</if>
+            <if test="uid != null">uid,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="address != null">#{address},</if>
+            <if test="systemUsdt != null">#{systemUsdt},</if>
+            <if test="outputEth != null">#{outputEth},</if>
+            <if test="rate != null">#{rate},</if>
+            <if test="createtime != null">#{createtime},</if>
+            <if test="uid != null">#{uid},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWakOutputlog" parameterType="WakOutputlog">
+        update wak_outputlog
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="address != null">address = #{address},</if>
+            <if test="systemUsdt != null">system_usdt = #{systemUsdt},</if>
+            <if test="outputEth != null">output_eth = #{outputEth},</if>
+            <if test="rate != null">rate = #{rate},</if>
+            <if test="createtime != null">createtime = #{createtime},</if>
+            <if test="uid != null">uid = #{uid},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWakOutputlogById" parameterType="Long">
+        delete from wak_outputlog where id = #{id}
+    </delete>
+
+    <delete id="deleteWakOutputlogByIds" parameterType="String">
+        delete from wak_outputlog where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
