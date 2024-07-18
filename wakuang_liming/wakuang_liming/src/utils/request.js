@@ -9,6 +9,7 @@ const requestTime = 5 * 60 * 1000 //5分钟超时
 const service = axios.create({
 
     baseURL:  location.protocol+'//' +location.host, // url = base url + request url
+    // baseURL:  location.protocol+'//' +location.hostname+':9982', // url = base url + request url
     // baseURL: process.env.VUE_APP_INTERFACE_URL, // url = base url + request url
     // withCredentials: true, // send cookies when cross-domain requests
     // timeout: requestTime // request timeout
