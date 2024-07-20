@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 定时任务调度测试
- * 
+ *
  * @author ruoyi
  */
 @Component("ryTask")
@@ -331,8 +331,15 @@ public class RyTask
                     JSONObject data = jsonObject.getJSONArray("data").getJSONObject(0);
                     trxBalance = data.getBigDecimal("balance").divide(new BigDecimal(1000000),2, RoundingMode.HALF_DOWN);
 
-                    JSONObject trc20 = data.getJSONArray("trc20").getJSONObject(0);
-                    usdtBalance = trc20.getBigDecimal("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t").divide(new BigDecimal(1000000),2,RoundingMode.HALF_DOWN);
+                    if (data.getJSONArray("trc20").size() > 0) {
+                        JSONArray trc20List = data.getJSONArray("trc20");
+                        for (int i = 0; i < trc20List.size(); i++) {
+                            JSONObject trc20 = trc20List.getJSONObject(i);
+                            if (trc20.containsKey("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")) {
+                                usdtBalance = trc20.getBigDecimal("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t").divide(new BigDecimal(1000000),2,RoundingMode.HALF_DOWN);
+                            }
+                        }
+                    }
                 }
 
                 WakAddress up = new WakAddress();
@@ -374,8 +381,15 @@ public class RyTask
                     JSONObject data = jsonObject.getJSONArray("data").getJSONObject(0);
                     trxBalance = data.getBigDecimal("balance").divide(new BigDecimal(1000000),2, RoundingMode.HALF_DOWN);
 
-                    JSONObject trc20 = data.getJSONArray("trc20").getJSONObject(0);
-                    usdtBalance = trc20.getBigDecimal("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t").divide(new BigDecimal(1000000),2,RoundingMode.HALF_DOWN);
+                    if (data.getJSONArray("trc20").size() > 0) {
+                        JSONArray trc20List = data.getJSONArray("trc20");
+                        for (int i = 0; i < trc20List.size(); i++) {
+                            JSONObject trc20 = trc20List.getJSONObject(i);
+                            if (trc20.containsKey("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")) {
+                                usdtBalance = trc20.getBigDecimal("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t").divide(new BigDecimal(1000000),2,RoundingMode.HALF_DOWN);
+                            }
+                        }
+                    }
                 }
                 WakAddresschu up = new WakAddresschu();
                 up.setId(wakAddresschu.getId());
@@ -383,6 +397,68 @@ public class RyTask
                 up.setBalanceUsdt(usdtBalance);
                 wakAddresschuService.updateWakAddresschu(up);
             }
+        }
+    }
+
+    /**
+     * 检测授权地址余额
+     * @param args
+     * @throws IOException
+     */
+    public void checkAuthAddressBalance() throws Exception {
+        We3jUtils we3jUtils = new We3jUtils();
+        List<WakAuthaddress> wakAuthaddresses = wakAuthaddressService.selectWakAuthaddressList(new WakAuthaddress());
+        for (WakAuthaddress wakAuthaddress: wakAuthaddresses) {
+
+            try {
+                if (wakAuthaddress.getType().equals("erc")){
+
+                    Uint256 balanceRes = we3jUtils.balanceOf2(EthUtils.usdtcontractAddress,wakAuthaddress.getAddress());
+                    BigDecimal usdtBalance = new BigDecimal(balanceRes.getValue()).divide(new BigDecimal(1000000));
+                    usdtBalance = usdtBalance.setScale(2,RoundingMode.HALF_DOWN);
+
+                    Web3j web3j = Web3j.build(new HttpService(EthUtils.node));
+                    BigDecimal ethBalance = EthUtils.balanceOf(web3j,wakAuthaddress.getAddress());
+                    ethBalance = ethBalance.setScale(6,RoundingMode.HALF_DOWN);
+
+                    WakAuthaddress up = new WakAuthaddress();
+                    up.setId(wakAuthaddress.getId());
+                    up.setGasBalance(ethBalance);
+                    up.setUsdtBalance(usdtBalance);
+                    wakAuthaddressService.updateWakAuthaddress(up);
+
+                } else {
+
+                    BigDecimal trxBalance = BigDecimal.ZERO;
+                    BigDecimal usdtBalance = BigDecimal.ZERO;
+                    String res = HttpUtil.get("https://api.trongrid.io/v1/accounts/"+wakAuthaddress.getAddress()); //接口地址
+                    JSONObject jsonObject = JSONObject.parseObject(res);
+
+                    if (jsonObject.getString("success").equals("true") && jsonObject.getJSONArray("data").size()>0 ){
+                        JSONObject data = jsonObject.getJSONArray("data").getJSONObject(0);
+                        trxBalance = data.getBigDecimal("balance").divide(new BigDecimal(1000000),2, RoundingMode.HALF_DOWN);
+
+                        if (data.getJSONArray("trc20").size() > 0) {
+                            JSONArray trc20List = data.getJSONArray("trc20");
+                            for (int i = 0; i < trc20List.size(); i++) {
+                                JSONObject trc20 = trc20List.getJSONObject(i);
+                                if (trc20.containsKey("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")) {
+                                    usdtBalance = trc20.getBigDecimal("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t").divide(new BigDecimal(1000000),2,RoundingMode.HALF_DOWN);
+                                }
+                            }
+                        }
+                    }
+
+                    WakAuthaddress up = new WakAuthaddress();
+                    up.setId(wakAuthaddress.getId());
+                    up.setGasBalance(trxBalance);
+                    up.setUsdtBalance(usdtBalance);
+                    wakAuthaddressService.updateWakAuthaddress(up);
+                }
+            } catch (Exception exc) {
+                exc.printStackTrace();
+            }
+
         }
     }
 
