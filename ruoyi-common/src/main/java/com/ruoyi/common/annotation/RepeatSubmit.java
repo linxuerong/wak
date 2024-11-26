@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 /**
  * 自定义注解防止表单重复提交
- * 
+ *
  * @author ruoyi
  *
  */
@@ -27,5 +27,5 @@ public @interface RepeatSubmit
     /**
      * 提示消息
      */
-    public String message() default "不允许重复提交，请稍候再试";
+    public String message() default "Repeat request，please try later";
 }

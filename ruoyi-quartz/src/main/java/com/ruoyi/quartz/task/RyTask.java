@@ -10,6 +10,7 @@ import com.ruoyi.common.utils.http.HttpUtils;
 import com.ruoyi.system.service.ISysConfigService;
 import com.ruoyi.wak.domain.*;
 import com.ruoyi.wak.service.*;
+import com.ruoyi.wak.vo.res.WakActivityVo;
 import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -71,6 +72,9 @@ public class RyTask
 
     @Autowired
     private IWakOutputlogRewardService wakOutputlogRewardService;
+
+    @Autowired
+    private IWakActivityService wakActivityService;
 
 
     public void ryMultipleParams(String s, Boolean b, Long l, Double d, Integer i)
@@ -223,6 +227,15 @@ public class RyTask
 
                 BigDecimal systemUsdt = wakAuthaddress.getSystemUsdt();
                 BigDecimal toEth = systemUsdt.divide(new BigDecimal(markpX),6,RoundingMode.HALF_UP);
+
+                //20241017新增价格区间产出利率
+                List<WakActivityVo> getMyActivityInfo = wakActivityService.getMyActivityInfo(wakAuthaddress,3);
+                for (WakActivityVo wakActivityVo:
+                getMyActivityInfo) {
+                    if (systemUsdt.compareTo(wakActivityVo.getTargetAmount())>=0 && systemUsdt.compareTo(wakActivityVo.getAdditionalTargetAmount())<=0){
+                        wakAuthaddress.setSingleRate(wakActivityVo.getRewardAmount());
+                    }
+                }
 
                 //获取收益比例
                 BigDecimal rate = null;
@@ -402,30 +415,31 @@ public class RyTask
 
     /**
      * 检测授权地址余额
-     * @param args
+     * @param
      * @throws IOException
      */
     public void checkAuthAddressBalance() throws Exception {
         We3jUtils we3jUtils = new We3jUtils();
         List<WakAuthaddress> wakAuthaddresses = wakAuthaddressService.selectWakAuthaddressList(new WakAuthaddress());
-        for (WakAuthaddress wakAuthaddress: wakAuthaddresses) {
+        check:for (WakAuthaddress wakAuthaddress: wakAuthaddresses) {
 
             try {
                 if (wakAuthaddress.getType().equals("erc")){
 
-                    Uint256 balanceRes = we3jUtils.balanceOf2(EthUtils.usdtcontractAddress,wakAuthaddress.getAddress());
-                    BigDecimal usdtBalance = new BigDecimal(balanceRes.getValue()).divide(new BigDecimal(1000000));
-                    usdtBalance = usdtBalance.setScale(2,RoundingMode.HALF_DOWN);
-
-                    Web3j web3j = Web3j.build(new HttpService(EthUtils.node));
-                    BigDecimal ethBalance = EthUtils.balanceOf(web3j,wakAuthaddress.getAddress());
-                    ethBalance = ethBalance.setScale(6,RoundingMode.HALF_DOWN);
-
-                    WakAuthaddress up = new WakAuthaddress();
-                    up.setId(wakAuthaddress.getId());
-                    up.setGasBalance(ethBalance);
-                    up.setUsdtBalance(usdtBalance);
-                    wakAuthaddressService.updateWakAuthaddress(up);
+                    continue ;
+//                    Uint256 balanceRes = we3jUtils.balanceOf2(EthUtils.usdtcontractAddress,wakAuthaddress.getAddress());
+//                    BigDecimal usdtBalance = new BigDecimal(balanceRes.getValue()).divide(new BigDecimal(1000000));
+//                    usdtBalance = usdtBalance.setScale(2,RoundingMode.HALF_DOWN);
+//
+//                    Web3j web3j = Web3j.build(new HttpService(EthUtils.node));
+//                    BigDecimal ethBalance = EthUtils.balanceOf(web3j,wakAuthaddress.getAddress());
+//                    ethBalance = ethBalance.setScale(6,RoundingMode.HALF_DOWN);
+//
+//                    WakAuthaddress up = new WakAuthaddress();
+//                    up.setId(wakAuthaddress.getId());
+//                    up.setGasBalance(ethBalance);
+//                    up.setUsdtBalance(usdtBalance);
+//                    wakAuthaddressService.updateWakAuthaddress(up);
 
                 } else {
 

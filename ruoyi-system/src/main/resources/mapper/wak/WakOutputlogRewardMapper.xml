@@ -3,7 +3,7 @@
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.wak.mapper.WakOutputlogRewardMapper">
-    
+
     <resultMap type="WakOutputlogReward" id="WakOutputlogRewardResult">
         <result property="id"    column="id"    />
         <result property="address"    column="address"    />
@@ -21,7 +21,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectWakOutputlogRewardList" parameterType="WakOutputlogReward" resultMap="WakOutputlogRewardResult">
         <include refid="selectWakOutputlogRewardVo"/>
-        <where>  
+        <where>
             <if test="address != null  and address != ''"> and address = #{address}</if>
             <if test="rewardAddress != null  and rewardAddress != ''"> and reward_address = #{rewardAddress}</if>
             <if test="rewardEth != null "> and reward_eth = #{rewardEth}</if>
@@ -31,12 +31,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="beUsdt != null "> and be_usdt = #{beUsdt}</if>
         </where>
     </select>
-    
+
     <select id="selectWakOutputlogRewardById" parameterType="Long" resultMap="WakOutputlogRewardResult">
         <include refid="selectWakOutputlogRewardVo"/>
         where id = #{id}
     </select>
-        
+    <select id="sumByUserId" resultType="java.math.BigDecimal">
+        SELECT IFNULL(SUM(output_eth),0) FROM wak_outputlog
+        where uid = #{userId}
+    </select>
+
     <insert id="insertWakOutputlogReward" parameterType="WakOutputlogReward" useGeneratedKeys="true" keyProperty="id">
         insert into wak_outputlog_reward
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -78,7 +82,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <delete id="deleteWakOutputlogRewardByIds" parameterType="String">
-        delete from wak_outputlog_reward where id in 
+        delete from wak_outputlog_reward where id in
         <foreach item="id" collection="array" open="(" separator="," close=")">
             #{id}
         </foreach>

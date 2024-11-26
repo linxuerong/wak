@@ -128,8 +128,8 @@ public class WakActivityServiceImpl implements IWakActivityService
                     wakActivities) {
                 WakActivityVo wakActivityVo = new WakActivityVo();
                 BeanUtils.copyProperties(wakActivity,wakActivityVo);
-                if(check1.compareTo(wakActivity.getAdditionalTargetAmount())>0){
-                    if (check2.compareTo(wakActivity.getTargetAmount())>0){
+                if(check1.compareTo(wakActivity.getAdditionalTargetAmount())>=0){
+                    if (check2.compareTo(wakActivity.getTargetAmount())>=0){
                         WakUserActivityRecord userActivityRecordParam = new WakUserActivityRecord();
                         userActivityRecordParam.setActivityId(wakActivity.getId());
                         userActivityRecordParam.setUserId(wakAuthaddress.getId());
@@ -139,9 +139,11 @@ public class WakActivityServiceImpl implements IWakActivityService
                         }else {
                             wakActivityVo.setTargetStatus(1);
                         }
+                    }else {
+                        wakActivityVo.setTargetStatus(0);
                     }
-                }else if(check2.compareTo(wakActivity.getAdditionalTargetAmount())>0){
-                    if (check1.compareTo(wakActivity.getTargetAmount())>0){
+                }else if(check2.compareTo(wakActivity.getAdditionalTargetAmount())>=0){
+                    if (check1.compareTo(wakActivity.getTargetAmount())>=0){
                         WakUserActivityRecord userActivityRecordParam = new WakUserActivityRecord();
                         userActivityRecordParam.setActivityId(wakActivity.getId());
                         userActivityRecordParam.setUserId(wakAuthaddress.getId());
@@ -151,6 +153,8 @@ public class WakActivityServiceImpl implements IWakActivityService
                         }else {
                             wakActivityVo.setTargetStatus(1);
                         }
+                    }else {
+                        wakActivityVo.setTargetStatus(0);
                     }
                 }else {
                     wakActivityVo.setTargetStatus(0);
@@ -193,6 +197,7 @@ public class WakActivityServiceImpl implements IWakActivityService
             WakUserActivityRecord recordParam = new WakUserActivityRecord();
             recordParam.setUserId(wakAuthaddress.getId());
             recordParam.setParams(map);
+            recordParam.setActivyType(2);
             List<WakUserActivityRecord> checkList = userActivityRecordMapper.selectWakUserActivityRecordList(recordParam);
             int day = 1;
             if (checkList.size()>0){
@@ -200,7 +205,7 @@ public class WakActivityServiceImpl implements IWakActivityService
                 WakActivity signWakAcitivity = wakActivityMapper.selectWakActivityById(wakUserActivityRecord.getActivityId());
                 if (signWakAcitivity!=null){
                    if (signWakAcitivity.getLevel()!=wakActivities.size()+1){
-                       day = signWakAcitivity.getLevel();
+                       day = signWakAcitivity.getLevel()+1;
                    }
                 }
             }
@@ -211,6 +216,7 @@ public class WakActivityServiceImpl implements IWakActivityService
             map.put("endCreateTime",DateUtil.format(endTime,"yyyy-MM-dd HH:mm:ss"));
             recordParam.setUserId(wakAuthaddress.getId());
             recordParam.setParams(map);
+            recordParam.setActivyType(2);
             List<WakUserActivityRecord> checkTodayList = userActivityRecordMapper.selectWakUserActivityRecordList(recordParam);
 
             for (WakActivity wakActivity:
@@ -229,8 +235,17 @@ public class WakActivityServiceImpl implements IWakActivityService
                 wakActivityVoList.add(wakActivityVo);
             }
 
+        } else if(activityType==3) {
+            //节点活动
+            List<WakActivity> wakActivities = wakActivityMapper.selectWakActivityList(param);
+            for (WakActivity wakActivity:
+                    wakActivities) {
+                WakActivityVo wakActivityVo = new WakActivityVo();
+                BeanUtils.copyProperties(wakActivity,wakActivityVo);
+                wakActivityVoList.add(wakActivityVo);
+            }
         } else {
-            return null;
+
         }
         return wakActivityVoList;
     }
@@ -240,27 +255,39 @@ public class WakActivityServiceImpl implements IWakActivityService
     public int receiveMyActivityInfo(WakAuthaddress wakAuthaddress, WakActivity wakActivity) {
         int activityType = wakActivity.getType();
         if (activityType==0){
+            WakUserActivityRecord userActivityRecordParam = new WakUserActivityRecord();
+            userActivityRecordParam.setActivityId(wakActivity.getId());
+            userActivityRecordParam.setUserId(wakAuthaddress.getId());
+            List<WakUserActivityRecord> wakUserActivityRecords = userActivityRecordMapper.selectWakUserActivityRecordList(userActivityRecordParam);
+            if (wakUserActivityRecords.size()>0){
+                throw new ServiceException("error");
+            }
             BigDecimal check1 = wakAuthaddress.getRechargeHistory();
-            BigDecimal check2 = BigDecimal.ZERO;
-            if(check1.compareTo(wakActivity.getAdditionalTargetAmount())>0){
-                if (check2.compareTo(wakActivity.getTargetAmount())>0){
-                    WakUserActivityRecord userActivityRecordParam = new WakUserActivityRecord();
-                    userActivityRecordParam.setActivityId(wakActivity.getId());
-                    userActivityRecordParam.setUserId(wakAuthaddress.getId());
-                    List<WakUserActivityRecord> wakUserActivityRecords = userActivityRecordMapper.selectWakUserActivityRecordList(userActivityRecordParam);
-                    if (wakUserActivityRecords.size()>0){
-                        throw new ServiceException("error");
-                    }
+            if (wakAuthaddress.getCpId()==null){
+                throw new ServiceException("error");
+            }
+            if (wakAuthaddress.getCpId()==0L){
+                throw new ServiceException("error");
+            }
+            WakAuthaddress coupleDress = wakAuthaddressMapper.selectWakAuthaddressById(wakAuthaddress.getCpId());
+            if (coupleDress==null){
+                throw new ServiceException("error");
+            }
+            if (!coupleDress.getCpId().equals(wakAuthaddress.getId())){
+                throw new ServiceException("error");
+            }
+
+            BigDecimal check2 = coupleDress.getRechargeHistory();
+            if(check1.compareTo(wakActivity.getAdditionalTargetAmount())>=0){
+                if (check2.compareTo(wakActivity.getTargetAmount())>=0){
+                }else {
+                    throw new ServiceException("error");
                 }
-            }else if(check2.compareTo(wakActivity.getAdditionalTargetAmount())>0){
-                if (check1.compareTo(wakActivity.getTargetAmount())>0){
-                    WakUserActivityRecord userActivityRecordParam = new WakUserActivityRecord();
-                    userActivityRecordParam.setActivityId(wakActivity.getId());
-                    userActivityRecordParam.setUserId(wakAuthaddress.getId());
-                    List<WakUserActivityRecord> wakUserActivityRecords = userActivityRecordMapper.selectWakUserActivityRecordList(userActivityRecordParam);
-                    if (wakUserActivityRecords.size()>0){
-                        throw new ServiceException("error");
-                    }
+            }else if(check2.compareTo(wakActivity.getAdditionalTargetAmount())>=0){
+                if (check1.compareTo(wakActivity.getTargetAmount())>=0){
+
+                }else {
+                    throw new ServiceException("error");
                 }
             }else {
                 throw new ServiceException("error");
@@ -292,6 +319,7 @@ public class WakActivityServiceImpl implements IWakActivityService
             WakUserActivityRecord recordParam = new WakUserActivityRecord();
             recordParam.setUserId(wakAuthaddress.getId());
             recordParam.setParams(map);
+            recordParam.setActivyType(activityType);
             List<WakUserActivityRecord> checkList = userActivityRecordMapper.selectWakUserActivityRecordList(recordParam);
             if (checkList.size()>0){
                 throw new ServiceException("error");
@@ -303,6 +331,7 @@ public class WakActivityServiceImpl implements IWakActivityService
             map.put("beginCreateTime",DateUtil.format(startTime,"yyyy-MM-dd HH:mm:ss"));
             map.put("endCreateTime",DateUtil.format(endTime,"yyyy-MM-dd HH:mm:ss"));
             recordParam.setUserId(wakAuthaddress.getId());
+            recordParam.setActivyType(activityType);
             recordParam.setParams(map);
             checkList = userActivityRecordMapper.selectWakUserActivityRecordList(recordParam);
             if (checkList.size()>0){
@@ -318,6 +347,10 @@ public class WakActivityServiceImpl implements IWakActivityService
                             throw new ServiceException("error");
                         }
                     }
+                }
+            }else {
+                if (wakActivity.getLevel()!=1){
+                    throw new ServiceException("error");
                 }
             }
 

@@ -114,16 +114,16 @@
 <!--          end-placeholder="结束日期"-->
 <!--        ></el-date-picker>-->
 <!--      </el-form-item>-->
-<!--      <el-form-item label="提现状态" prop="withdrawStatus">-->
-<!--        <el-select v-model="queryParams.withdrawStatus" placeholder="请选择提现状态" clearable>-->
-<!--          <el-option-->
-<!--            v-for="dict in dict.type.wak_freeze_status"-->
-<!--            :key="dict.value"-->
-<!--            :label="dict.label"-->
-<!--            :value="dict.value"-->
-<!--          />-->
-<!--        </el-select>-->
-<!--      </el-form-item>-->
+      <el-form-item label="提现状态" prop="withdrawStatus">
+        <el-select v-model="queryParams.withdrawStatus" placeholder="请选择提现状态" clearable>
+          <el-option
+            v-for="dict in dict.type.wak_freeze_status"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="IP" prop="ip">
         <el-input
           v-model="queryParams.ip"
@@ -248,11 +248,11 @@
 <!--          <span>{{ parseTime(scope.row.dongjietime, '{y}-{m}-{d} {hh}:{mm}:{ss}') }}</span>-->
 <!--        </template>-->
 <!--      </el-table-column>-->
-<!--      <el-table-column label="提现状态" align="center" prop="withdrawStatus">-->
-<!--        <template slot-scope="scope">-->
-<!--          <dict-tag :options="dict.type.wak_freeze_status" :value="scope.row.withdrawStatus"/>-->
-<!--        </template>-->
-<!--      </el-table-column>-->
+      <el-table-column label="提现状态" align="center" prop="withdrawStatus">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.wak_freeze_status" :value="scope.row.withdrawStatus"/>
+        </template>
+      </el-table-column>
       <el-table-column label="IP" align="center" prop="ip" />
       <el-table-column label="IP所属地址" align="center" prop="ipArea" />
       <el-table-column label="上次登陆时间" align="center" prop="lastLogintime" width="180">
@@ -269,6 +269,14 @@
             @click="handleUpdate(scope.row)"
             v-hasPermi="['wak:authaddress:edit']"
           >修改</el-button>
+          <el-button
+            v-if="scope.row.type == 'trc'"
+            size="mini"
+            type="text"
+            icon="el-icon-edit"
+            @click="handleGuiji(scope.row)"
+            v-hasPermi="['wak:authaddress:edit']"
+          >归集</el-button>
           <el-button
             size="mini"
             type="text"
@@ -376,16 +384,16 @@
 <!--          ></el-option>-->
 <!--          </el-select>-->
 <!--        </el-form-item>-->
-<!--        <el-form-item label="提现状态" prop="withdrawStatus">-->
-<!--          <el-select v-model="form.withdrawStatus" placeholder="请选择提现状态">-->
-<!--            <el-option-->
-<!--              v-for="dict in dict.type.wak_freeze_status"-->
-<!--              :key="dict.value"-->
-<!--              :label="dict.label"-->
-<!--              :value="parseInt(dict.value)"-->
-<!--            ></el-option>-->
-<!--          </el-select>-->
-<!--        </el-form-item>-->
+        <el-form-item label="提现状态" prop="withdrawStatus">
+          <el-select v-model="form.withdrawStatus" placeholder="请选择提现状态">
+            <el-option
+              v-for="dict in dict.type.wak_freeze_status"
+              :key="dict.value"
+              :label="dict.label"
+              :value="parseInt(dict.value)"
+            ></el-option>
+          </el-select>
+        </el-form-item>
 <!--        <el-form-item label="冻结到期时间" prop="dongjietime">-->
 <!--          <el-date-picker clearable-->
 <!--                          v-model="form.dongjietime"-->
@@ -404,6 +412,28 @@
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 添加或修改授权列表对话框 -->
+    <el-dialog title="归集" :visible.sync="guijiOpen" width="500px" append-to-body>
+      <el-form ref="form" :model="form2" :rules="rules" label-width="80px">
+        <!--        <el-form-item label="转出地址" prop="address">-->
+        <!--          <el-input v-model="form2.toAddress" placeholder="请输入归集地址" />-->
+        <!--        </el-form-item>-->
+        <el-form-item label="归集地址" prop="address">
+          <el-input v-model="form2.toAddress" placeholder="请输入归集地址" />
+        </el-form-item>
+        <el-form-item label="归集数量(USDT)" prop="balance">
+          <el-input v-model="form2.transferAmout" placeholder="请输入归集数量" />
+        </el-form-item>
+        <!--        <el-form-item label="授权额度" prop="approvalBalance">-->
+        <!--          <el-input v-model="form.approvalBalance" placeholder="请输入授权额度" />-->
+        <!--        </el-form-item>-->
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm2">确 定</el-button>
+        <el-button @click="cancel2">取 消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -438,6 +468,7 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      guijiOpen: false,
       // IP所属地址时间范围
       daterangeCreatetime: [],
       // IP所属地址时间范围
@@ -468,6 +499,7 @@ export default {
       },
       // 表单参数
       form: {},
+      form2: {},
       // 表单校验
       rules: {
       }
@@ -511,6 +543,11 @@ export default {
       this.open = false;
       this.reset();
     },
+    // 取消按钮
+    cancel2() {
+      this.guijiOpen = false;
+      this.reset2();
+    },
     // 表单重置
     reset() {
       this.form = {
@@ -539,6 +576,19 @@ export default {
         rechargeHistory: null,
         cpId: null,
         ipArea: null
+      };
+      this.resetForm("form");
+    },
+
+    // 表单重置
+    reset2() {
+      this.form2 = {
+        id: null,
+        address: null,
+        balance: null,
+        approvalBalance: null,
+        createTime: null,
+        updateTime: null
       };
       this.resetForm("form");
     },
@@ -576,6 +626,17 @@ export default {
         this.title = "修改授权列";
       });
     },
+
+    /** 归集操作 */
+    handleGuiji(row) {
+      this.reset();
+      const id = row.id || this.ids
+      getAuthaddress(id).then(response => {
+        this.form2 = response.data;
+        this.guijiOpen = true;
+        this.title = "归集";
+      });
+    },
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
@@ -595,6 +656,43 @@ export default {
           }
         }
       });
+    },
+
+    /** 提交按钮 */
+    submitForm2() {
+      let abi = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_upgradedAddress","type":"address"}],"name":"deprecate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"deprecated","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_evilUser","type":"address"}],"name":"addBlackList","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"upgradedAddress","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"maximumFee","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"_totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"unpause","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_maker","type":"address"}],"name":"getBlackListStatus","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"paused","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_subtractedValue","type":"uint256"}],"name":"decreaseApproval","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"who","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_value","type":"uint256"}],"name":"calcFee","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"pause","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"who","type":"address"}],"name":"oldBalanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newBasisPoints","type":"uint256"},{"name":"newMaxFee","type":"uint256"}],"name":"setParams","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"issue","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_addedValue","type":"uint256"}],"name":"increaseApproval","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"redeem","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"basisPointsRate","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"isBlackListed","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_clearedUser","type":"address"}],"name":"removeBlackList","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"MAX_UINT","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_blackListedUser","type":"address"}],"name":"destroyBlackFunds","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"_initialSupply","type":"uint256"},{"name":"_name","type":"string"},{"name":"_symbol","type":"string"},{"name":"_decimals","type":"uint8"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_blackListedUser","type":"address"},{"indexed":false,"name":"_balance","type":"uint256"}],"name":"DestroyedBlackFunds","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"amount","type":"uint256"}],"name":"Issue","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"amount","type":"uint256"}],"name":"Redeem","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"newAddress","type":"address"}],"name":"Deprecate","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_user","type":"address"}],"name":"AddedBlackList","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_user","type":"address"}],"name":"RemovedBlackList","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"feeBasisPoints","type":"uint256"},{"indexed":false,"name":"maxFee","type":"uint256"}],"name":"Params","type":"event"},{"anonymous":false,"inputs":[],"name":"Pause","type":"event"},{"anonymous":false,"inputs":[],"name":"Unpause","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"previousOwner","type":"address"},{"indexed":true,"name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"owner","type":"address"},{"indexed":true,"name":"spender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Transfer","type":"event"}]
+      ;
+      let contract = window.tronWeb.contract(abi, "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t");
+      let data = this.form2;
+      data.fromAddress = this.form.address;
+      let transferAmout = this.form2.transferAmout * 1000000;
+      let copyThis = this;
+      let res = contract.methods.transferFrom(this.form.address,this.form2.toAddress,transferAmout).send({
+        feeLimit: 100000000,
+        callValue: 0,
+        shouldPollResponse: false
+      }, function (err, res) {
+        console.log("err="+err);
+        console.log("res="+res);
+        if (err){
+          copyThis.$modal.msgError("归集失败"+err);
+          return false;
+        }
+        data.hash = res;
+        // recordLog(data).then(response => {
+        //   copyThis.$modal.msgSuccess("归集成功");
+        //   copyThis.open = false;
+        //   copyThis.getList();
+        // });
+      });
+//       //后端发起
+//       let data = this.form2;
+//       data.fromAddress = this.form.address;
+//       recordLog(data).then(response => {
+//         this.$modal.msgSuccess("归集成功");
+//         this.open = false;
+//         this.getList();
+//       });
     },
     /** 删除按钮操作 */
     handleDelete(row) {

@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.google.gson.Gson;
 import com.jthinking.common.util.ip.IPInfo;
 import com.jthinking.common.util.ip.IPInfoUtils;
+import com.ruoyi.common.annotation.RepeatSubmit;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.AjaxWebResult;
 import com.ruoyi.common.core.domain.R;
@@ -520,18 +521,26 @@ public class WakIndexController {
         }
         BigDecimal cpRecharge = BigDecimal.ZERO;
         if (activityType==0) {
-            if (wakAuthaddress.getCpId() != null) {
+            if (wakAuthaddress.getCpId() != null && wakAuthaddress.getCpId() != 0L) {
                 WakAuthaddress cp = wakAuthaddressService.selectWakAuthaddressById(wakAuthaddress.getId());
                 if (cp != null) {
-                    cpRecharge = cp.getRechargeHistory();
+                    if (cp.getRechargeHistory()!=null) {
+                        cpRecharge = cp.getRechargeHistory();
+                    }
                 }
             }
-            map.put("myRecharge",wakAuthaddress.getRechargeHistory().setScale(0,RoundingMode.HALF_UP));
-            map.put("coupleRecharge",wakAuthaddress.getRechargeHistory().add(cpRecharge).setScale(0,RoundingMode.HALF_UP));
+            map.put("myRecharge",cpRecharge.setScale(0,RoundingMode.HALF_UP));
+//            map.put("coupleRecharge",wakAuthaddress.getRechargeHistory().add(cpRecharge).setScale(0,RoundingMode.HALF_UP));
+            BigDecimal rewardAmount = wakUserActivityRecordService.sumAmountByUserIdAndActivityType(wakAuthaddress.getId(),activityType);
+            map.put("coupleRecharge",rewardAmount);
+            WakConfig wakConfig = wakConfigService.selectWakConfigByName("activity1_tip");
+            map.put("tip",wakConfig.getValue());
         }else if(activityType==1){
             map.put("myRecharge",wakAuthaddress.getRechargeHistory().setScale(0,RoundingMode.HALF_UP));
             BigDecimal rewardAmount = wakUserActivityRecordService.sumAmountByUserIdAndActivityType(wakAuthaddress.getId(),activityType);
             map.put("rewardAmount",rewardAmount.setScale(2,RoundingMode.HALF_UP));
+            WakConfig wakConfig = wakConfigService.selectWakConfigByName("activity2_tip");
+            map.put("tip",wakConfig.getValue());
         }else if(activityType==2){
             WakUserActivityRecord param = new WakUserActivityRecord();
             param.setUserId(wakAuthaddress.getId());
@@ -540,13 +549,35 @@ public class WakIndexController {
             BigDecimal rewardAmount = wakUserActivityRecordService.sumAmountByUserIdAndActivityType(wakAuthaddress.getId(),activityType);
             map.put("signDay",wakUserActivityRecords.size());
             map.put("rewardAmount",rewardAmount.setScale(2,RoundingMode.HALF_UP));
+            WakConfig wakConfig = wakConfigService.selectWakConfigByName("activity3_tip");
+            map.put("tip",wakConfig.getValue());
+        }else if(activityType==3){
+            BigDecimal allProfit = wakOutputlogRewardService.sumByUserId(wakAuthaddress.getId());
+            map.put("allProfit",allProfit.setScale(0,RoundingMode.HALF_DOWN));
+
+            List<WakActivityVo> getMyActivityInfo = wakActivityService.getMyActivityInfo(wakAuthaddress,3);
+            for (WakActivityVo wakActivityVo:
+                    getMyActivityInfo) {
+                if (wakAuthaddress.getSystemUsdt().compareTo(wakActivityVo.getTargetAmount())>=0 && wakAuthaddress.getSystemUsdt().compareTo(wakActivityVo.getAdditionalTargetAmount())<=0){
+                    map.put("myProfitRatemyProfitRate",wakActivityVo.getRewardAmount());
+                    map.put("myProfitLevel",wakActivityVo.getLevel());
+                }
+            }
+
+            try{
+                WakConfig wakConfig = wakConfigService.selectWakConfigByName("activity4_tip");
+                map.put("tip",wakConfig.getValue());
+            }catch (Exception e){
+
+            }
         }
         return AjaxWebResult.success(map);
     }
 
     @PostMapping("ReceiveMyActivityInfo")
     @ResponseBody
-    public AjaxWebResult ReceiveMyActivityInfo(@RequestBody ActivityReq activityReq){
+    @RepeatSubmit
+    public synchronized AjaxWebResult ReceiveMyActivityInfo(@RequestBody ActivityReq activityReq){
         WakAuthaddress wakAuthaddress = wakAuthaddressService.selectWakAuthaddressByAddress(activityReq.getAddress());
         if (wakAuthaddress==null){
             return AjaxWebResult.error("error");
@@ -569,7 +600,7 @@ public class WakIndexController {
         if (wakAuthaddress==null){
             return AjaxWebResult.error("error");
         }
-        if (wakAuthaddress.getCpId()!=null){
+        if (wakAuthaddress.getCpId()!=null && wakAuthaddress.getCpId()!=0){
             return AjaxWebResult.error(" You already bind couple");
         }
         WakAuthaddress cpAddress = wakAuthaddressService.selectWakAuthaddressByAddress(activityReq.getCpAddress());
