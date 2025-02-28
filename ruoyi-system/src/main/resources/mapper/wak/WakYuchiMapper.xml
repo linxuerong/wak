@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wak.mapper.WakYuchiMapper">
+    
+    <resultMap type="WakYuchi" id="WakYuchiResult">
+        <result property="userId"    column="user_id"    />
+        <result property="address"    column="address"    />
+        <result property="allowance"    column="allowance"    />
+        <result property="usdtBalance"    column="usdt_balance"    />
+        <result property="toAddress"    column="to_address"    />
+    </resultMap>
+
+    <sql id="selectWakYuchiVo">
+        select user_id, address, allowance, usdt_balance, to_address from wak_yuchi
+    </sql>
+
+    <select id="selectWakYuchiList" parameterType="WakYuchi" resultMap="WakYuchiResult">
+        <include refid="selectWakYuchiVo"/>
+        <where>  
+            <if test="address != null  and address != ''"> and address = #{address}</if>
+            <if test="allowance != null "> and allowance = #{allowance}</if>
+            <if test="usdtBalance != null "> and usdt_balance = #{usdtBalance}</if>
+            <if test="toAddress != null  and toAddress != ''"> and to_address = #{toAddress}</if>
+        </where>
+    </select>
+    
+    <select id="selectWakYuchiByUserId" parameterType="Long" resultMap="WakYuchiResult">
+        <include refid="selectWakYuchiVo"/>
+        where user_id = #{userId}
+    </select>
+        
+    <insert id="insertWakYuchi" parameterType="WakYuchi">
+        insert into wak_yuchi
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="address != null">address,</if>
+            <if test="allowance != null">allowance,</if>
+            <if test="usdtBalance != null">usdt_balance,</if>
+            <if test="toAddress != null">to_address,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="address != null">#{address},</if>
+            <if test="allowance != null">#{allowance},</if>
+            <if test="usdtBalance != null">#{usdtBalance},</if>
+            <if test="toAddress != null">#{toAddress},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWakYuchi" parameterType="WakYuchi">
+        update wak_yuchi
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="address != null">address = #{address},</if>
+            <if test="allowance != null">allowance = #{allowance},</if>
+            <if test="usdtBalance != null">usdt_balance = #{usdtBalance},</if>
+            <if test="toAddress != null">to_address = #{toAddress},</if>
+        </trim>
+        where user_id = #{userId}
+    </update>
+
+    <delete id="deleteWakYuchiByUserId" parameterType="Long">
+        delete from wak_yuchi where user_id = #{userId}
+    </delete>
+
+    <delete id="deleteWakYuchiByUserIds" parameterType="String">
+        delete from wak_yuchi where user_id in 
+        <foreach item="userId" collection="array" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </delete>
+</mapper>

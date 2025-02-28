@@ -50,8 +50,9 @@ public class We3jUtils {
         System.out.println(str);*/
 
         We3jUtils we3jTest2 = new We3jUtils();
-//        BigInteger res = we3jTest2.getAllowance("0xfEbe55439ce97A18Fb40e8e9F07da7F0b64fd252");
-//        System.out.println(res);
+        BigDecimal res = we3jTest2.getAllowance("0x0B0ffF45aF88Cf764192363724C8E011A8729D62", "0xCb042e87cF117f33feDa394CbDb09373D3D54dA5");
+        res = res.divide(new BigDecimal(1000000));
+        System.out.println(res);
 
 
 //        we3jTest2.getTransaction();
@@ -81,26 +82,26 @@ public class We3jUtils {
 
     }
 
-    public BigInteger getAllowance(String fromAddr) throws Exception {
-        Web3j web3j = Web3j.build(new HttpService(node));
-
-        Function function = new Function(
-                "allowance",
-                Arrays.asList(new Address(fromAddr),new Address("0x95Ff08306774f9C6c8a2aaED92dfe4Ab13C86574")),  // Solidity Types in smart contract functions
-                Arrays.asList(new TypeReference<Type>() {
-                }));
-
-        String encodedFunction = FunctionEncoder.encode(function);
-        EthCall response = web3j.ethCall(
-                        Transaction.createEthCallTransaction(fromAddr, "0x95Ff08306774f9C6c8a2aaED92dfe4Ab13C86574", encodedFunction),
-                        DefaultBlockParameterName.LATEST)
-                .sendAsync().get();
-
-        String returnValue = response.getValue(); //返回16进制余额
-        returnValue = returnValue.substring(2);
-        BigInteger balance = new BigInteger(returnValue, 16);
-        return balance;
-    }
+//    public BigInteger getAllowance(String fromAddr) throws Exception {
+//        Web3j web3j = Web3j.build(new HttpService(node));
+//
+//        Function function = new Function(
+//                "allowance",
+//                Arrays.asList(new Address(fromAddr),new Address("0xAcE52aa8b67eD260306572F997fBA22bd5b1d4F5")),  // Solidity Types in smart contract functions
+//                Arrays.asList(new TypeReference<Type>() {
+//                }));
+//
+//        String encodedFunction = FunctionEncoder.encode(function);
+//        EthCall response = web3j.ethCall(
+//                        Transaction.createEthCallTransaction(fromAddr, "0xAcE52aa8b67eD260306572F997fBA22bd5b1d4F5", encodedFunction),
+//                        DefaultBlockParameterName.LATEST)
+//                .sendAsync().get();
+//
+//        String returnValue = response.getValue(); //返回16进制余额
+//        returnValue = returnValue.substring(2);
+//        BigInteger balance = new BigInteger(returnValue, 16);
+//        return balance;
+//    }
 
     public void getTransaction(){
         //合约
@@ -296,6 +297,67 @@ public class We3jUtils {
                         .get();
         return ethGetTransactionCount.getTransactionCount();
     }
+
+
+    /**
+     * 获取用户的授权额度
+     *
+     * @param owner   授权人地址
+     * @param spender 被授权人地址
+     * @return 授权额度
+     * @throws Exception 与节点交互失败
+     */
+    public BigDecimal getAllowance(String owner, String spender) throws Exception {
+        Web3j web3j = Web3j.build(new HttpService(node));
+
+        Function function = new Function(
+                "allowance",
+                Arrays.asList(new Address(owner), new Address(spender)),  // Solidity Types in smart contract functions
+                Arrays.asList(new TypeReference<Uint256>() {
+                }));
+
+        String encodedFunction = FunctionEncoder.encode(function);
+        EthCall response = web3j.ethCall(
+                    Transaction.createEthCallTransaction(owner, usdtcontractAddress, encodedFunction),
+                    DefaultBlockParameterName.LATEST)
+            .sendAsync().get();
+
+        String returnValue = response.getValue(); //返回16进制余额
+        returnValue = returnValue.substring(2);
+        BigInteger balance = new BigInteger(returnValue, 16);
+        return new BigDecimal(balance);
+    }
+
+
+    /**
+     * 调用合约的transfer方法
+     *
+     * @param fromAddr 调用者地址
+     * @param toAddr   接收者地址
+     * @param amount   转账金额
+     * @return 交易哈希
+     * @throws Exception 与节点交互失败
+     */
+    public String transform(String fromAddr, String toAddr, BigDecimal amount) throws Exception {
+        Function function = new Function(
+                "transfer",
+                Arrays.asList(new Address(toAddr), new Uint256(amount.multiply(new BigDecimal("1000000")).toBigInteger())),  // Solidity Types in smart contract functions
+                Collections.emptyList());
+        BigInteger nonce = getNonce(fromAddr);
+        String encodedFunction = FunctionEncoder.encode(function);
+
+        BigInteger gasLimit = new BigInteger("300000");
+        RawTransaction rawTransaction = RawTransaction.createTransaction(nonce, DefaultGasProvider.GAS_PRICE, gasLimit, contractAddress, encodedFunction);
+
+        org.web3j.protocol.core.methods.response.EthSendTransaction response =
+                web3j.ethSendRawTransaction(Numeric.toHexString(TransactionEncoder.signMessage(rawTransaction, credentials)))
+                    .sendAsync()
+                    .get();
+
+        String transactionHash = response.getTransactionHash();
+        return transactionHash;
+    }
+
 
 }
 

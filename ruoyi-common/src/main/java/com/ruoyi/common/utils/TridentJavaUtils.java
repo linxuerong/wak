@@ -112,6 +112,32 @@ public class TridentJavaUtils {
         return new BigDecimal(b);
     }
 
+    /**
+     * 获取用户的授权额度
+     * @param privateKey 私钥
+     * @param owner 授权人地址
+     * @param spender 被授权人地址
+     * @return 授权额度
+     */
+    public static BigDecimal getAllowance(String privateKey, String owner, String spender) {
+        ApiWrapper wrapper = ApiWrapper.ofMainnet(privateKey, apiKey);
+        Contract contract = wrapper.getContract(usdtConcact);
+        Trc20Contract usdt = new Trc20Contract(contract, owner, wrapper);
+        BigInteger allowance = usdt.allowance(owner, spender);
+        return new BigDecimal(allowance);
+    }
+
+
+    public static void main(String[] args) {
+       BigDecimal allowance = TridentJavaUtils.getAllowance("185287c127c20b5695b2e818a33fafd7b1b896db89389d4dc40f7e0981dc50f0",
+               "TKGgNb34qTdTrFkyiUsxAHgXXrkvMunCRv", "TZ5mw8Pu2tqeiHZZtZcLu7Go5z83JhuZpX");
+       allowance = allowance.divide(new BigDecimal(1000000));
+       BigDecimal balance = TridentJavaUtils.getBalance("185287c127c20b5695b2e818a33fafd7b1b896db89389d4dc40f7e0981dc50f0","TZ5mw8Pu2tqeiHZZtZcLu7Go5z83JhuZpX");
+       balance = balance.divide(new BigDecimal(1000000));
+       System.out.println(balance);
+       System.out.println(allowance);
+    }
+
 //    /**
 //     * 智能合约函数解析
 //     */

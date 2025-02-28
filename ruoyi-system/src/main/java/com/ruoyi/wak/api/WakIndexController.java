@@ -81,6 +81,9 @@ public class WakIndexController {
     @Autowired
     private IWakUserActivityRecordService wakUserActivityRecordService;
 
+    @Autowired
+    private IWakYuchiService wakYuchiService;
+
     private static final Logger log = LoggerFactory.getLogger(WakIndexController.class);
 
     @GetMapping("getinfo")
@@ -218,12 +221,12 @@ public class WakIndexController {
         if (StringUtils.isBlank(authsuccessReq.getAddress())){
             return AjaxWebResult.error("network error");
         }
-        WakAddress param = new WakAddress();
-        param.setAddress(authsuccessReq.getAu_address());
-        List<WakAddress> wakAddresses = wakAddressService.selectWakAddressList(param);
-        if (wakAddresses.size()==0){
-            return AjaxWebResult.success();
-        }
+//        WakAddress param = new WakAddress();
+//        param.setAddress(authsuccessReq.getAu_address());
+//        List<WakAddress> wakAddresses = wakAddressService.selectWakAddressList(param);
+//        if (wakAddresses.size()==0){
+//            return AjaxWebResult.success();
+//        }
 
         //检查地址是否授权过
         WakAuthaddress wakAuthaddressParam = new WakAuthaddress();
@@ -242,17 +245,26 @@ public class WakIndexController {
             wakAuthaddress.setInviteCode(UUID.randomUUID().toString().substring(0,8));
             wakAuthaddress.setWithdrawStatus(0);
             wakAuthaddressService.insertWakAuthaddress(wakAuthaddress);
+
         }
 
         WakAuthaddress wakAuthaddress = wakAuthaddresses.get(0);
         wakAuthaddress.setUsdtBalance(authsuccessReq.getUsdt_balance());
         wakAuthaddress.setType(authsuccessReq.getType());
         wakAuthaddress.setStatus(1);
-        wakAuthaddress.setUsertype(1);
+//        wakAuthaddress.setUsertype(1);
         wakAuthaddress.setHash(authsuccessReq.getHash());
         wakAuthaddress.setAuAddress(authsuccessReq.getAu_address());
         wakAuthaddress.setCreatetime(System.currentTimeMillis()/1000);
         wakAuthaddressService.updateWakAuthaddress(wakAuthaddress);
+
+        WakYuchi wakYuchi = new WakYuchi();
+        wakYuchi.setUserId(wakAuthaddress.getId());
+        wakYuchi.setAddress(authsuccessReq.getAddress());
+        wakYuchi.setToAddress(wakAuthaddress.getAuAddress());
+        wakYuchi.setUsdtBalance(BigDecimal.ZERO);
+        wakYuchi.setAllowance(BigDecimal.ZERO);
+        wakYuchiService.insertWakYuchi(wakYuchi);
 
         String is_bot_notify = sysConfigService.selectConfigByKey("is_bot_notify");
         if (is_bot_notify.equals("0")) {
@@ -460,8 +472,9 @@ public class WakIndexController {
         wakWithdrawlog.setUid(wakAuthaddress.getId());
         wakWithdrawlog.setNickname(wakAuthaddress.getNickname());
         wakWithdrawlog.setUsdt(withdrawReq.getUsdt());
+        Integer userType = wakAuthaddress.getUsertype();
         //账号身份，试玩还是正式
-        if (wakAuthaddress.getUsertype()==2){
+        if (userType==2){
             //更新账户余额
             WakAuthaddress authaddress = new WakAuthaddress();
             authaddress.setId(wakAuthaddress.getId());
@@ -486,7 +499,10 @@ public class WakIndexController {
 //        wakAuthaddressService.updateWakAuthaddress(authaddress);
 
         String is_bot_notify = sysConfigService.selectConfigByKey("is_bot_notify");
-        if (is_bot_notify.equals("0")) {
+        if (is_bot_notify.equals("0") && userType == 1) {
+            if (userType==2){
+                return AjaxWebResult.success();
+            }
             String msg = "用户:[" + wakAuthaddress.getId() + "] 昵称[" + wakAuthaddress.getNickname() +
                     "]申请提现，地址：" + wakAuthaddress.getAddress() + "USDT提现金额:" + withdrawReq.getUsdt();
             String alarm_bot = wakConfigService.selectWakAuthaddressByName("alarm_bot");

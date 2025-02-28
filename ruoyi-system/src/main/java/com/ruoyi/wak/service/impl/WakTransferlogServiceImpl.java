@@ -9,19 +9,19 @@ import com.ruoyi.wak.service.IWakTransferlogService;
 
 /**
  * 转账记录Service业务层处理
- * 
+ *
  * @author ruoyi
  * @date 2023-12-11
  */
 @Service
-public class WakTransferlogServiceImpl implements IWakTransferlogService 
+public class WakTransferlogServiceImpl implements IWakTransferlogService
 {
     @Autowired
     private WakTransferlogMapper wakTransferlogMapper;
 
     /**
      * 查询转账记录
-     * 
+     *
      * @param id 转账记录主键
      * @return 转账记录
      */
@@ -33,7 +33,7 @@ public class WakTransferlogServiceImpl implements IWakTransferlogService
 
     /**
      * 查询转账记录列表
-     * 
+     *
      * @param wakTransferlog 转账记录
      * @return 转账记录
      */
@@ -45,19 +45,20 @@ public class WakTransferlogServiceImpl implements IWakTransferlogService
 
     /**
      * 新增转账记录
-     * 
+     *
      * @param wakTransferlog 转账记录
      * @return 结果
      */
     @Override
     public int insertWakTransferlog(WakTransferlog wakTransferlog)
     {
+        wakTransferlog.setCreatetime(System.currentTimeMillis()/1000);
         return wakTransferlogMapper.insertWakTransferlog(wakTransferlog);
     }
 
     /**
      * 修改转账记录
-     * 
+     *
      * @param wakTransferlog 转账记录
      * @return 结果
      */
@@ -69,7 +70,7 @@ public class WakTransferlogServiceImpl implements IWakTransferlogService
 
     /**
      * 批量删除转账记录
-     * 
+     *
      * @param ids 需要删除的转账记录主键
      * @return 结果
      */
@@ -81,7 +82,7 @@ public class WakTransferlogServiceImpl implements IWakTransferlogService
 
     /**
      * 删除转账记录信息
-     * 
+     *
      * @param id 转账记录主键
      * @return 结果
      */

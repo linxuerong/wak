@@ -52,13 +52,13 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
-  
+
         <!-- JSON工具类 -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
-        
+
         <!-- 动态数据源 -->
 		<dependency>
 			<groupId>com.baomidou</groupId>
@@ -180,7 +180,16 @@
             <artifactId>core</artifactId>
             <version>3.4.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.web3j</groupId>
+            <artifactId>crypto</artifactId>
+            <version>4.8.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.web3j</groupId>
+            <artifactId>abi</artifactId>
+            <version>4.8.7</version>
+        </dependency>
         <!-- hutool -->
         <dependency>
             <groupId>cn.hutool</groupId>
@@ -203,11 +212,11 @@
 <!--            <version>0.15</version>-->
 <!--        </dependency>-->
 
-<!--        <dependency>-->
-<!--            <groupId>io.grpc</groupId>-->
-<!--            <artifactId>grpc-all</artifactId>-->
-<!--            <version>1.48.1</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-all</artifactId>
+            <version>1.48.1</version>
+        </dependency>
 
     </dependencies>
 
